@@ -1,0 +1,40 @@
+* { box-sizing: border-box; }
+
+:root {
+  color-scheme: dark;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #0b0c10;
+  color: #f6f4ee;
+}
+
+body { margin: 0; background: #0b0c10; }
+main { width: min(1080px, calc(100% - 40px)); margin: 0 auto; padding: 72px 0 40px; }
+.hero { margin-bottom: 48px; }
+.eyebrow { font-size: 12px; letter-spacing: .18em; opacity: .55; margin: 0 0 12px; }
+h1 { font-size: clamp(48px, 9vw, 92px); line-height: .9; letter-spacing: -.06em; margin: 0; }
+.tagline { font-size: 20px; opacity: .65; margin-top: 20px; }
+.panel { border: 1px solid #2b2d33; border-radius: 20px; overflow: hidden; background: #111318; }
+.panelHeading { padding: 24px; display: flex; justify-content: space-between; gap: 24px; align-items: center; border-bottom: 1px solid #2b2d33; }
+.panelHeading h2 { margin: 0 0 6px; font-size: 22px; }
+.panelHeading p { margin: 0; opacity: .55; }
+.status { font-size: 12px; padding: 8px 12px; border: 1px solid #3a3d44; border-radius: 999px; white-space: nowrap; }
+.storyGrid { display: grid; }
+.storyCard { display: grid; grid-template-columns: 52px 1fr 90px; gap: 18px; align-items: center; padding: 22px 24px; border-bottom: 1px solid #23262c; }
+.storyCard:last-child { border-bottom: 0; }
+.rank { font-size: 13px; opacity: .35; }
+.storyContent h3 { margin: 0 0 7px; font-size: 18px; }
+.storyContent p { margin: 0; opacity: .55; line-height: 1.5; font-size: 14px; }
+.score { text-align: right; }
+.score span { display: block; font-size: 28px; font-weight: 700; }
+.score small { opacity: .4; }
+.errorBox, .emptyBox { margin: 24px; padding: 20px; border: 1px solid #3a3d44; border-radius: 12px; }
+.errorBox p { margin-bottom: 0; opacity: .7; }
+footer { text-align: center; padding: 30px 0 0; font-size: 12px; opacity: .35; }
+
+@media (max-width: 650px) {
+  main { width: min(100% - 24px, 1080px); padding-top: 40px; }
+  .panelHeading { align-items: flex-start; flex-direction: column; }
+  .storyCard { grid-template-columns: 32px 1fr; }
+  .score { grid-column: 2; text-align: left; display: flex; align-items: baseline; gap: 8px; }
+  .score span { font-size: 20px; }
+}
