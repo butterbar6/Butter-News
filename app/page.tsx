@@ -1,69 +1,55 @@
 import { supabase } from "../lib/supabase";
+import StoryBubbles, { type BubbleStory } from "../components/StoryBubbles";
 
 export const dynamic = "force-dynamic";
-
-type Story = {
-  id: string;
-  title: string;
-  summary: string | null;
-  importance_score: number;
-};
 
 export default async function Home() {
   const { data, error } = await supabase
     .from("stories")
-    .select("id,title,summary,importance_score")
+    .select(`
+      id,
+      title,
+      summary,
+      importance_score,
+      story_metrics(metric_type, metric_value),
+      story_items(
+        items(
+          id,
+          title,
+          url,
+          published_at,
+          sources(name)
+        )
+      )
+    `)
     .order("importance_score", { ascending: false })
-    .limit(10);
+    .limit(50);
 
-  const stories = (data ?? []) as Story[];
+  const stories = (data ?? []) as unknown as BubbleStory[];
 
   return (
     <main>
-      <header className="hero">
-        <p className="eyebrow">INITIAL CONNECTION TEST</p>
-        <h1>Butter News</h1>
-        <p className="tagline">Visualize the news.</p>
+      <header className="hero heroCompact">
+        <div>
+          <p className="eyebrow">BUTTER NEWS · VISUALIZATION V1</p>
+          <h1>See the shape of the news.</h1>
+          <p className="tagline">Each bubble is a story. Size it by exposure, momentum, coverage, or importance.</p>
+        </div>
+        <span className="status">{error ? "Connection issue" : "Live from Supabase"}</span>
       </header>
 
-      <section className="panel">
-        <div className="panelHeading">
-          <div>
-            <h2>Top stories</h2>
-            <p>Live test data from your Supabase database.</p>
-          </div>
-          <span className="status">{error ? "Connection issue" : "Supabase connected"}</span>
-        </div>
+      {error ? (
+        <section className="panel errorBox">
+          <strong>Supabase query failed.</strong>
+          <p>{error.message}</p>
+        </section>
+      ) : stories.length === 0 ? (
+        <section className="panel emptyBox">Connected, but no stories were returned.</section>
+      ) : (
+        <StoryBubbles stories={stories} />
+      )}
 
-        {error ? (
-          <div className="errorBox">
-            <strong>Supabase query failed.</strong>
-            <p>{error.message}</p>
-          </div>
-        ) : stories.length === 0 ? (
-          <div className="emptyBox">Connected, but no stories were returned.</div>
-        ) : (
-          <div className="storyGrid">
-            {stories.map((story, index) => (
-              <article className="storyCard" key={story.id}>
-                <div className="rank">{String(index + 1).padStart(2, "0")}</div>
-                <div className="storyContent">
-                  <h3>{story.title}</h3>
-                  {story.summary && <p>{story.summary}</p>}
-                </div>
-                <div className="score">
-                  <span>{story.importance_score}</span>
-                  <small>importance</small>
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
-
-      <footer>
-        First milestone: GitHub → Vercel → Supabase
-      </footer>
+      <footer>Butter News · Bubble visualization prototype</footer>
     </main>
   );
 }
