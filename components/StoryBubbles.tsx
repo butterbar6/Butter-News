@@ -27,6 +27,7 @@ export type BubbleStory = {
 
 type MetricKey = "exposure_score" | "momentum" | "article_count" | "source_count" | "importance_score";
 type PackedPosition = { left: number; top: number };
+type RadialLayout = { positions: PackedPosition[]; sizes: number[] };
 
 const metricLabels: Record<MetricKey, string> = {
   exposure_score: "Exposure",
@@ -110,87 +111,113 @@ function seededRandom(seed: number) {
   };
 }
 
-function packRandomly(stories: BubbleStory[], sizes: number[], metric: MetricKey): PackedPosition[] {
+function makeRadialLayout(
+  stories: BubbleStory[],
+  baseSizes: number[],
+  metric: MetricKey
+): RadialLayout {
   const width = 1400;
   const height = 610;
-  const gap = 10;
-  const orbitPadding = 42;
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const edgeGap = 10;
+  const clusterGap = 8;
+  const orbitPadding = 42; // includes decorative satellite orbit and satellite radius
 
-  const entries = stories.map((story, index) => ({
-    story,
-    index,
-    radius: sizes[index] / 2 + orbitPadding,
-  }));
+  if (stories.length === 0) return { positions: [], sizes: [] };
+  if (stories.length === 1) {
+    return { positions: [{ left: 50, top: 50 }], sizes: baseSizes };
+  }
 
-  const ordered = [...entries].sort((a, b) => b.radius - a.radius);
-  const placed: Array<{ index: number; x: number; y: number; radius: number }> = [];
+  // Stories are already sorted largest-to-smallest by the selected metric,
+  // so index 0 is always the central/main story.
+  const outerCount = stories.length - 1;
   const seed = hashString(`${metric}:${stories.map((story) => story.id).join("|")}`);
   const random = seededRandom(seed);
 
-  for (const entry of ordered) {
-    let best: { x: number; y: number; score: number } | null = null;
+  // Create a stable organic-looking circular order and slight angular jitter.
+  const outerIndices = Array.from({ length: outerCount }, (_, i) => i + 1);
+  for (let i = outerIndices.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(random() * (i + 1));
+    [outerIndices[i], outerIndices[j]] = [outerIndices[j], outerIndices[i]];
+  }
 
-    for (let attempt = 0; attempt < 5000; attempt += 1) {
-      const minX = entry.radius + gap;
-      const maxX = width - entry.radius - gap;
-      const minY = entry.radius + gap;
-      const maxY = height - entry.radius - gap;
+  const baseStep = (Math.PI * 2) / outerCount;
+  const rotation = random() * Math.PI * 2;
+  const angles = outerIndices.map((_, slot) => {
+    const jitter = (random() - 0.5) * baseStep * 0.18;
+    return rotation + slot * baseStep + jitter;
+  });
 
-      if (maxX <= minX || maxY <= minY) continue;
+  function buildAtScale(scale: number) {
+    const sizes = baseSizes.map((size) => Math.max(54, size * scale));
+    const radii = sizes.map((size) => size / 2 + orbitPadding * scale);
+    const centerRadius = radii[0];
 
-      const x = minX + random() * (maxX - minX);
-      const y = minY + random() * (maxY - minY);
+    // Start with the smallest radius that clears the center cluster.
+    let ringRadius = Math.max(
+      ...outerIndices.map((index) => centerRadius + radii[index] + clusterGap)
+    );
 
-      let valid = true;
-      let nearest = Number.POSITIVE_INFINITY;
+    // Increase ring radius until EVERY outer cluster clears every other cluster.
+    for (let a = 0; a < outerCount; a += 1) {
+      for (let b = a + 1; b < outerCount; b += 1) {
+        let delta = Math.abs(angles[a] - angles[b]) % (Math.PI * 2);
+        if (delta > Math.PI) delta = Math.PI * 2 - delta;
+        const chordFactor = 2 * Math.sin(delta / 2);
+        if (chordFactor <= 0.0001) continue;
 
-      for (const existing of placed) {
-        const distance = Math.hypot(x - existing.x, y - existing.y);
-        const required = entry.radius + existing.radius + gap;
-        if (distance < required) {
-          valid = false;
-          break;
-        }
-        nearest = Math.min(nearest, distance - required);
+        const indexA = outerIndices[a];
+        const indexB = outerIndices[b];
+        const required = (radii[indexA] + radii[indexB] + clusterGap) / chordFactor;
+        ringRadius = Math.max(ringRadius, required);
       }
-
-      if (!valid) continue;
-
-      const edgeClearance = Math.min(
-        x - entry.radius,
-        width - x - entry.radius,
-        y - entry.radius,
-        height - y - entry.radius
-      );
-
-      const centerDistance = Math.hypot(x - width / 2, y - height / 2);
-      const score = (Number.isFinite(nearest) ? nearest : 200) + edgeClearance * 0.22 - centerDistance * 0.03;
-
-      if (!best || score > best.score) best = { x, y, score };
     }
 
-    if (!best) {
-      const columns = 5;
-      const slot = placed.length;
-      best = {
-        x: ((slot % columns) + 0.5) * (width / columns),
-        y: (Math.floor(slot / columns) + 0.5) * (height / 2),
-        score: 0,
+    const positionsPx: Array<{ x: number; y: number }> = stories.map(() => ({ x: centerX, y: centerY }));
+    outerIndices.forEach((storyIndex, slot) => {
+      positionsPx[storyIndex] = {
+        x: centerX + Math.cos(angles[slot]) * ringRadius,
+        y: centerY + Math.sin(angles[slot]) * ringRadius,
       };
+    });
+
+    const fits = positionsPx.every((position, index) => {
+      const radius = radii[index];
+      return (
+        position.x - radius >= edgeGap &&
+        position.x + radius <= width - edgeGap &&
+        position.y - radius >= edgeGap &&
+        position.y + radius <= height - edgeGap
+      );
+    });
+
+    return { sizes, radii, ringRadius, positionsPx, fits };
+  }
+
+  // Find the largest global scale that guarantees zero overlap and remains on-screen.
+  let low = 0.22;
+  let high = 1;
+  let best = buildAtScale(low);
+
+  for (let iteration = 0; iteration < 26; iteration += 1) {
+    const mid = (low + high) / 2;
+    const candidate = buildAtScale(mid);
+    if (candidate.fits) {
+      best = candidate;
+      low = mid;
+    } else {
+      high = mid;
     }
-
-    placed.push({ index: entry.index, x: best.x, y: best.y, radius: entry.radius });
   }
 
-  const positions: PackedPosition[] = stories.map(() => ({ left: 50, top: 50 }));
-  for (const item of placed) {
-    positions[item.index] = {
-      left: (item.x / width) * 100,
-      top: (item.y / height) * 100,
-    };
-  }
-
-  return positions;
+  return {
+    sizes: best.sizes.map((size) => Math.round(size)),
+    positions: best.positionsPx.map((position) => ({
+      left: (position.x / width) * 100,
+      top: (position.y / height) * 100,
+    })),
+  };
 }
 
 export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
@@ -210,19 +237,19 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
 
   const maxValue = Math.max(...displayed.map((story) => metricValue(story, metric)), 1);
 
-  function sizeFor(value: number) {
+  function baseSizeFor(value: number) {
     // Bubble AREA is proportional to the selected metric.
-    // Since area = pi * r^2, diameter must scale with sqrt(score).
-    const maxDiameter = 188;
+    // Therefore diameter scales with sqrt(metric / maxMetric).
+    const maxDiameter = 210;
     const minDiameter = 82;
     const proportionalDiameter = maxDiameter * Math.sqrt(Math.max(value, 0) / maxValue);
-    return Math.round(Math.max(minDiameter, proportionalDiameter));
+    return Math.max(minDiameter, proportionalDiameter);
   }
 
-  const sizes = displayed.map((story) => sizeFor(metricValue(story, metric)));
-  const positions = useMemo(
-    () => packRandomly(displayed, sizes, metric),
-    [displayed, metric, sizes.join(",")]
+  const baseSizes = displayed.map((story) => baseSizeFor(metricValue(story, metric)));
+  const layout = useMemo(
+    () => makeRadialLayout(displayed, baseSizes, metric),
+    [displayed, metric, baseSizes.join(",")]
   );
 
   const controls = (
@@ -260,8 +287,8 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
         <section className="bubbleStage circularStage overviewView" aria-label="Story bubble visualization">
           {displayed.map((story, storyIndex) => {
             const value = metricValue(story, metric);
-            const size = sizes[storyIndex];
-            const position = positions[storyIndex];
+            const size = layout.sizes[storyIndex];
+            const position = layout.positions[storyIndex];
             const items = flattenItems(story).slice(0, 8);
             const bubbleColor = bubbleColors[storyIndex % bubbleColors.length];
 
@@ -294,7 +321,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
                 <div className="decorativeOrbit" aria-hidden="true">
                   {items.map((item, itemIndex) => {
                     const angle = -Math.PI / 2 + (itemIndex / Math.max(items.length, 1)) * Math.PI * 2;
-                    const orbit = size / 2 + 22;
+                    const orbit = size / 2 + Math.max(12, 22 * (size / Math.max(baseSizes[storyIndex], 1)));
                     const left = size / 2 + Math.cos(angle) * orbit;
                     const top = size / 2 + Math.sin(angle) * orbit;
                     return (
