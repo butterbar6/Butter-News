@@ -2,8 +2,8 @@
 
 :root {
   font-family: Arial, Helvetica, sans-serif;
-  background: #f8dfe8;
-  color: #2b1f24;
+  background: #ffffff;
+  color: #111111;
 }
 
 html, body {
@@ -11,16 +11,24 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #f8dfe8;
+  background:
+    radial-gradient(circle at 8% 18%, #111 0 1px, transparent 1.4px),
+    radial-gradient(circle at 26% 68%, #111 0 1px, transparent 1.4px),
+    radial-gradient(circle at 44% 30%, #111 0 1px, transparent 1.4px),
+    radial-gradient(circle at 68% 70%, #111 0 1px, transparent 1.4px),
+    radial-gradient(circle at 86% 24%, #111 0 1px, transparent 1.4px),
+    radial-gradient(circle at 92% 82%, #111 0 1px, transparent 1.4px),
+    #ffffff;
+  background-size: 150px 150px, 180px 180px, 210px 210px, 170px 170px, 230px 230px, 190px 190px;
 }
 
 button, select { font: inherit; }
 
 main {
-  width: min(1500px, calc(100% - 24px));
+  width: 100%;
   height: 100svh;
-  margin: 0 auto;
-  padding: 10px 0;
+  margin: 0;
+  padding: 0;
 }
 
 .visualizerShell {
@@ -29,40 +37,67 @@ main {
   flex-direction: column;
 }
 
+.brandBanner {
+  flex: 0 0 auto;
+  text-align: center;
+  color: #111;
+  background: linear-gradient(180deg, #ffd76a 0%, #f4bd39 100%);
+  border-bottom: 2px solid #111;
+  padding: 8px 16px 9px;
+  z-index: 5;
+}
+
+.brandBanner h1 {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(28px, 3.5vw, 54px);
+  line-height: .95;
+  letter-spacing: .025em;
+  font-weight: 800;
+}
+
+.brandBanner p {
+  margin: 6px 0 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(14px, 1.5vw, 22px);
+  line-height: 1;
+  font-style: italic;
+}
+
 .controlBar {
   flex: 0 0 auto;
   display: flex;
-  gap: 12px;
+  justify-content: center;
+  gap: 10px;
   align-items: stretch;
-  padding: 0 0 10px;
+  padding: 9px 12px 8px;
   overflow-x: auto;
   overflow-y: hidden;
 }
 
 .controlBar label {
   display: grid;
-  gap: 5px;
-  min-width: 180px;
-  padding: 9px 12px;
-  border: 1px solid rgba(68, 43, 52, .16);
-  border-radius: 14px;
-  background: rgba(255,255,255,.5);
-  backdrop-filter: blur(10px);
+  gap: 3px;
+  min-width: 178px;
+  padding: 7px 11px;
+  border: 1.5px solid #111;
+  border-radius: 999px;
+  background: rgba(255,255,255,.96);
 }
 
 .controlBar span {
-  font-size: 10px;
+  font-size: 9px;
   text-transform: uppercase;
-  letter-spacing: .12em;
-  opacity: .5;
+  letter-spacing: .1em;
+  opacity: .58;
 }
 
 .controlBar select {
-  color: #2b1f24;
+  color: #111;
   border: 0;
   outline: 0;
   background: transparent;
-  font-weight: 700;
+  font-weight: 800;
   cursor: pointer;
 }
 
@@ -70,7 +105,6 @@ main {
   position: relative;
   flex: 1 1 auto;
   min-height: 0;
-  border-radius: 28px;
   overflow: hidden;
 }
 
@@ -87,18 +121,20 @@ main {
 
 .storyBubble {
   border-radius: 50%;
-  border: 2px solid rgba(255,255,255,.88);
-  color: white;
-  padding: 22px;
+  border: 2.5px solid #111;
+  color: #111;
+  padding: 18px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
-  background-size: cover;
-  background-position: center;
-  box-shadow: 0 18px 42px rgba(75, 43, 55, .2);
-  transition: transform .22s ease, box-shadow .22s ease, filter .22s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,.08);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.solidBubble {
+  background-image: none !important;
 }
 
 .mainBubbleButton {
@@ -108,38 +144,28 @@ main {
 }
 
 .overviewCluster:hover .mainBubbleButton {
-  transform: scale(1.02);
-  box-shadow: 0 22px 46px rgba(75, 43, 55, .25);
-  filter: saturate(1.04);
+  transform: scale(1.018);
+  box-shadow: 0 12px 28px rgba(0,0,0,.14);
 }
 
 .storyBubble strong {
-  font-size: clamp(12px, 1.05vw, 17px);
-  line-height: 1.15;
-  max-width: 92%;
-  text-shadow: 0 2px 12px rgba(0,0,0,.48);
-}
-
-.storyBubble small {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  margin-top: 8px;
-  max-width: 90%;
-  font-size: 10px;
-  line-height: 1.3;
-  opacity: .88;
-  text-shadow: 0 2px 9px rgba(0,0,0,.5);
+  display: block;
+  max-width: 86%;
+  font-size: clamp(12px, 1vw, 18px);
+  line-height: 1.05;
+  font-weight: 900;
+  overflow-wrap: anywhere;
+  text-shadow: none;
 }
 
 .bubbleMetric {
+  margin-top: 8px;
+  margin-bottom: 0;
   font-size: 8px;
-  letter-spacing: .09em;
+  letter-spacing: .06em;
   text-transform: uppercase;
-  opacity: .78;
-  margin-bottom: 7px;
-  text-shadow: 0 2px 8px rgba(0,0,0,.45);
+  opacity: .76;
+  text-shadow: none;
 }
 
 .decorativeOrbit { pointer-events: none; }
@@ -147,19 +173,17 @@ main {
 .subBubble {
   position: absolute;
   border-radius: 50%;
-  border: 3px solid rgba(255,255,255,.95);
+  border: 1.75px solid #111;
   padding: 0;
-  background-size: cover;
-  background-position: center;
-  box-shadow: 0 8px 18px rgba(75,43,55,.22);
+  box-shadow: 0 3px 8px rgba(0,0,0,.09);
 }
 
 .subBubbleDecorative {
-  width: 46px;
-  height: 46px;
-  margin-left: -23px;
-  margin-top: -23px;
-  opacity: .98;
+  width: 34px;
+  height: 34px;
+  margin-left: -17px;
+  margin-top: -17px;
+  opacity: 1;
   transform: none !important;
   transition: none !important;
   filter: none !important;
@@ -167,7 +191,7 @@ main {
 
 .overviewView .subBubbleDecorative:hover {
   transform: none !important;
-  box-shadow: 0 8px 18px rgba(75,43,55,.22) !important;
+  box-shadow: 0 3px 8px rgba(0,0,0,.09) !important;
   filter: none !important;
 }
 
@@ -175,33 +199,33 @@ main {
   min-height: 0;
   display: grid;
   place-items: center;
-  animation: zoomInView .42s ease both;
+  animation: zoomInView .35s ease both;
 }
 
 @keyframes zoomInView {
-  from { opacity: 0; transform: scale(.92); }
+  from { opacity: 0; transform: scale(.94); }
   to { opacity: 1; transform: scale(1); }
 }
 
 .backButton {
   position: absolute;
-  top: 12px;
+  top: 10px;
   left: 12px;
   z-index: 20;
-  border: 1px solid rgba(68,43,52,.16);
-  background: rgba(255,255,255,.72);
-  color: #2b1f24;
+  border: 1.5px solid #111;
+  background: #fff;
+  color: #111;
   border-radius: 999px;
-  padding: 10px 15px;
+  padding: 9px 14px;
   cursor: pointer;
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .focusScene {
   position: relative;
   width: min(920px, 92vw);
-  height: min(720px, calc(100svh - 120px));
-  min-height: 620px;
+  height: min(690px, calc(100svh - 190px));
+  min-height: 600px;
 }
 
 .focusOrbitRing {
@@ -211,7 +235,7 @@ main {
   width: 570px;
   height: 570px;
   transform: translate(-50%, -50%);
-  border: 1.5px dashed rgba(193, 80, 119, .5);
+  border: 1.5px dashed rgba(0,0,0,.35);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -220,8 +244,8 @@ main {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 340px;
-  height: 340px;
+  width: 330px;
+  height: 330px;
   transform: translate(-50%, -50%);
   z-index: 4;
 }
@@ -230,23 +254,21 @@ main {
   font-size: clamp(20px, 2vw, 29px);
 }
 
-.focusMainBubble small {
-  font-size: 12px;
-  -webkit-line-clamp: 4;
-}
-
 .focusSubBubble {
   width: 130px;
   height: 130px;
   margin-left: -65px;
   margin-top: -65px;
   cursor: pointer;
-  color: white;
+  color: #fff;
   display: grid;
   place-items: center;
   padding: 12px;
   text-align: center;
   z-index: 6;
+  border: 2px solid #111;
+  background-size: cover;
+  background-position: center;
   transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
 }
 
@@ -265,9 +287,8 @@ main {
 }
 
 .focusSubBubble:hover {
-  transform: scale(1.08);
-  box-shadow: 0 15px 32px rgba(75,43,55,.32);
-  filter: saturate(1.06);
+  transform: scale(1.06);
+  box-shadow: 0 10px 24px rgba(0,0,0,.2);
 }
 
 .articleModalBackdrop {
@@ -277,8 +298,8 @@ main {
   display: grid;
   place-items: center;
   padding: 28px;
-  background: rgba(49, 30, 37, .38);
-  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,.34);
+  backdrop-filter: blur(7px);
 }
 
 .articleModal {
@@ -286,10 +307,11 @@ main {
   width: min(860px, 94vw);
   max-height: 88vh;
   overflow: auto;
-  border-radius: 24px;
-  background: #fffafc;
-  color: #2b1f24;
-  box-shadow: 0 28px 90px rgba(65, 37, 48, .34);
+  border: 2px solid #111;
+  border-radius: 20px;
+  background: #fff;
+  color: #111;
+  box-shadow: 0 28px 90px rgba(0,0,0,.25);
 }
 
 .modalClose {
@@ -299,23 +321,22 @@ main {
   z-index: 3;
   width: 40px;
   height: 40px;
-  border: 0;
+  border: 1.5px solid #111;
   border-radius: 50%;
-  background: rgba(255,255,255,.9);
-  color: #2b1f24;
+  background: #fff;
+  color: #111;
   font-size: 28px;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 5px 18px rgba(0,0,0,.12);
 }
 
 .articleHero {
-  height: 260px;
+  height: 250px;
   background-size: cover;
   background-position: center;
 }
 
-.articleModalBody { padding: 30px 34px 36px; }
+.articleModalBody { padding: 28px 32px 34px; }
 
 .articleMeta {
   margin: 0 0 10px;
@@ -336,35 +357,40 @@ main {
   font-family: Georgia, 'Times New Roman', serif;
   font-size: 18px;
   line-height: 1.72;
-  color: #382a30;
+  color: #222;
 }
 
 .articleText p { margin: 0 0 1.15em; }
 
 .panel {
-  border: 1px solid rgba(68,43,52,.16);
+  margin: 18px;
+  border: 1.5px solid #111;
   border-radius: 18px;
-  background: rgba(255,255,255,.56);
+  background: #fff;
 }
 
 .errorBox, .emptyBox { padding: 20px; }
 .errorBox p { margin-bottom: 0; opacity: .7; }
 
-@media (max-width: 900px) {
-  .storyCluster { transform: translate(-50%, -50%) scale(.76); }
-  .focusScene { transform: scale(.78); }
+@media (max-width: 1000px) {
+  .brandBanner h1 { font-size: 34px; }
+  .brandBanner p { font-size: 15px; }
+  .storyCluster { transform: translate(-50%, -50%) scale(.8); }
+  .focusScene { transform: scale(.77); }
 }
 
 @media (max-width: 650px) {
-  main { width: min(100% - 10px, 1500px); padding-top: 6px; padding-bottom: 6px; }
-  .controlBar { gap: 8px; padding-bottom: 6px; }
-  .controlBar label { min-width: 145px; padding: 7px 9px; }
+  .brandBanner { padding: 7px 10px; }
+  .brandBanner h1 { font-size: 25px; }
+  .brandBanner p { font-size: 12px; }
+  .controlBar { justify-content: flex-start; gap: 7px; padding: 6px 6px 5px; }
+  .controlBar label { min-width: 145px; padding: 6px 9px; }
   .storyCluster { transform: translate(-50%, -50%) scale(.56); }
-  .subBubbleDecorative { width: 42px; height: 42px; margin-left: -21px; margin-top: -21px; }
-  .focusScene { width: 100%; height: 650px; min-height: 650px; transform: scale(.58); }
+  .subBubbleDecorative { width: 30px; height: 30px; margin-left: -15px; margin-top: -15px; }
+  .focusScene { width: 100%; height: 620px; min-height: 620px; transform: scale(.58); }
   .articleModalBackdrop { padding: 12px; }
-  .articleModal { width: 100%; max-height: 92vh; border-radius: 18px; }
-  .articleHero { height: 190px; }
+  .articleModal { width: 100%; max-height: 92vh; border-radius: 16px; }
+  .articleHero { height: 185px; }
   .articleModalBody { padding: 22px 20px 28px; }
   .articleText { font-size: 16px; }
 }
