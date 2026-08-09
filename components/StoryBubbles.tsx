@@ -81,16 +81,16 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   const max = values.length ? Math.max(...values) : 1;
 
   function sizeFor(value: number) {
-    if (max === min) return 220;
+    if (max === min) return 176;
     const normalized = Math.max(0, Math.min(1, (value - min) / (max - min)));
-    return Math.round(150 + Math.sqrt(normalized) * 170);
+    return Math.round(120 + Math.sqrt(normalized) * 100);
   }
 
   function clusterPosition(index: number, count: number) {
     if (count === 1) return { left: 50, top: 50 };
     const angle = -Math.PI / 2 + (index / count) * Math.PI * 2;
-    const radiusX = count <= 4 ? 26 : 33;
-    const radiusY = count <= 4 ? 25 : 32;
+    const radiusX = count <= 4 ? 25 : 30;
+    const radiusY = count <= 4 ? 24 : 28;
     return {
       left: 50 + Math.cos(angle) * radiusX,
       top: 50 + Math.sin(angle) * radiusY,
@@ -169,7 +169,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
                 <div className="decorativeOrbit" aria-hidden="true">
                   {items.map((item, itemIndex) => {
                     const angle = -Math.PI / 2 + (itemIndex / Math.max(items.length, 1)) * Math.PI * 2;
-                    const orbit = size / 2 + 42;
+                    const orbit = size / 2 + 30;
                     const left = size / 2 + Math.cos(angle) * orbit;
                     const top = size / 2 + Math.sin(angle) * orbit;
                     const itemImage = item.image_url ?? fallbackImage(item.id);
