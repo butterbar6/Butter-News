@@ -59,28 +59,29 @@ main {
   cursor: pointer;
 }
 
-.bubbleStage,
-.focusStage {
+.bubbleStage {
   position: relative;
   min-height: calc(100vh - 120px);
   border-radius: 28px;
   overflow: hidden;
 }
 
-.overviewStage {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-content: center;
-  justify-content: center;
-  padding: 42px;
+.circularStage {
+  min-height: 980px;
+  height: calc(100vh - 105px);
+  max-height: 1120px;
+}
+
+.storyCluster {
+  position: absolute;
+  transform: translate(-50%, -50%);
 }
 
 .storyBubble {
-  position: relative;
-  flex: 0 0 auto;
+  position: absolute;
+  inset: 0;
   border-radius: 50%;
-  border: 2px solid rgba(255,255,255,.82);
+  border: 2px solid rgba(255,255,255,.88);
   color: white;
   padding: 26px;
   display: flex;
@@ -90,19 +91,14 @@ main {
   text-align: center;
   background-size: cover;
   background-position: center;
-  box-shadow: 0 16px 38px rgba(75, 43, 55, .18);
-}
-
-button.storyBubble {
-  cursor: pointer;
+  box-shadow: 0 18px 42px rgba(75, 43, 55, .2);
   transition: transform .22s ease, box-shadow .22s ease, filter .22s ease;
 }
 
-button.storyBubble:hover {
-  transform: scale(1.035);
-  box-shadow: 0 22px 48px rgba(75, 43, 55, .25);
+.storyCluster:hover .storyBubble {
+  transform: scale(1.025);
+  box-shadow: 0 24px 52px rgba(75, 43, 55, .27);
   filter: saturate(1.05);
-  z-index: 2;
 }
 
 .storyBubble strong {
@@ -134,90 +130,103 @@ button.storyBubble:hover {
   text-shadow: 0 2px 8px rgba(0,0,0,.45);
 }
 
-.focusStage {
-  display: grid;
-  place-items: center;
-  padding: 70px 30px 40px;
-}
-
-.backButton {
-  position: absolute;
-  top: 12px;
-  left: 12px;
-  z-index: 5;
-  border: 1px solid rgba(68,43,52,.16);
-  background: rgba(255,255,255,.66);
-  color: #2b1f24;
-  border-radius: 999px;
-  padding: 10px 15px;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.focusCluster {
-  position: relative;
-  width: min(820px, 86vw);
-  height: min(820px, 76vh);
-  min-height: 620px;
-}
-
-.focusMainBubble {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: min(360px, 44vw);
-  height: min(360px, 44vw);
-  min-width: 270px;
-  min-height: 270px;
-  transform: translate(-50%, -50%);
-  z-index: 3;
-}
-
-.focusMainBubble strong {
-  font-size: clamp(19px, 2vw, 28px);
-}
-
-.focusMainBubble small {
-  font-size: 12px;
-  -webkit-line-clamp: 4;
-}
-
-.subBubbleOrbit {
-  position: absolute;
-  inset: 0;
-}
-
 .subBubble {
   position: absolute;
-  width: 112px;
-  height: 112px;
+  width: 64px;
+  height: 64px;
+  margin-left: -32px;
+  margin-top: -32px;
   border-radius: 50%;
-  border: 3px solid rgba(255,255,255,.92);
+  border: 3px solid rgba(255,255,255,.95);
+  padding: 0;
+  cursor: pointer;
   background-size: cover;
   background-position: center;
-  box-shadow: 0 12px 26px rgba(75,43,55,.2);
-  transition: transform .2s ease, box-shadow .2s ease;
-}
-
-.subBubble:hover {
-  transform: scale(1.08);
-  box-shadow: 0 16px 34px rgba(75,43,55,.3);
+  box-shadow: 0 9px 20px rgba(75,43,55,.24);
+  transition: transform .18s ease, box-shadow .18s ease;
   z-index: 4;
 }
 
-.subBubble-0 { left: 50%; top: 2%; transform: translateX(-50%); }
-.subBubble-1 { right: 8%; top: 16%; }
-.subBubble-2 { right: 1%; top: 50%; transform: translateY(-50%); }
-.subBubble-3 { right: 10%; bottom: 10%; }
-.subBubble-4 { left: 50%; bottom: 0; transform: translateX(-50%); }
-.subBubble-5 { left: 10%; bottom: 10%; }
-.subBubble-6 { left: 1%; top: 50%; transform: translateY(-50%); }
-.subBubble-7 { left: 8%; top: 16%; }
+.subBubble:hover {
+  transform: scale(1.12);
+  box-shadow: 0 14px 30px rgba(75,43,55,.34);
+  z-index: 8;
+}
 
-.subBubble-0:hover,
-.subBubble-4:hover { transform: translateX(-50%) scale(1.08); }
-.subBubble-2:hover,
-.subBubble-6:hover { transform: translateY(-50%) scale(1.08); }
+.articleModalBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background: rgba(49, 30, 37, .38);
+  backdrop-filter: blur(8px);
+}
+
+.articleModal {
+  position: relative;
+  width: min(860px, 94vw);
+  max-height: 88vh;
+  overflow: auto;
+  border-radius: 24px;
+  background: #fffafc;
+  color: #2b1f24;
+  box-shadow: 0 28px 90px rgba(65, 37, 48, .34);
+}
+
+.modalClose {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 3;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255,255,255,.9);
+  color: #2b1f24;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 5px 18px rgba(0,0,0,.12);
+}
+
+.articleHero {
+  height: 260px;
+  background-size: cover;
+  background-position: center;
+}
+
+.articleModalBody {
+  padding: 30px 34px 36px;
+}
+
+.articleMeta {
+  margin: 0 0 10px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  opacity: .55;
+}
+
+.articleModal h2 {
+  margin: 0 0 22px;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -.03em;
+}
+
+.articleText {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 18px;
+  line-height: 1.72;
+  color: #382a30;
+}
+
+.articleText p {
+  margin: 0 0 1.15em;
+}
 
 .panel {
   border: 1px solid rgba(68,43,52,.16);
@@ -228,18 +237,31 @@ button.storyBubble:hover {
 .errorBox, .emptyBox { padding: 20px; }
 .errorBox p { margin-bottom: 0; opacity: .7; }
 
-@media (max-width: 760px) {
-  main { width: min(100% - 16px, 1500px); padding-top: 10px; }
+@media (max-width: 900px) {
+  .circularStage {
+    min-height: 1050px;
+    height: 1050px;
+  }
+  .storyCluster {
+    transform: translate(-50%, -50%) scale(.84);
+  }
+}
+
+@media (max-width: 650px) {
+  main { width: min(100% - 14px, 1500px); padding-top: 10px; }
   .controlBar label { min-width: 155px; }
-  .overviewStage { padding: 24px 10px; gap: 8px; align-content: flex-start; }
-  .storyBubble { transform: scale(.88); margin: -8px; }
-  button.storyBubble:hover { transform: scale(.91); }
-  .focusStage { padding: 72px 8px 24px; }
-  .focusCluster { width: 100%; height: 640px; min-height: 640px; }
-  .focusMainBubble { width: 270px; height: 270px; min-width: 270px; min-height: 270px; }
-  .subBubble { width: 84px; height: 84px; }
-  .subBubble-1 { right: 2%; }
-  .subBubble-3 { right: 3%; }
-  .subBubble-5 { left: 3%; }
-  .subBubble-7 { left: 2%; }
+  .circularStage {
+    min-height: 920px;
+    height: 920px;
+    overflow: visible;
+  }
+  .storyCluster {
+    transform: translate(-50%, -50%) scale(.68);
+  }
+  .subBubble { width: 58px; height: 58px; margin-left: -29px; margin-top: -29px; }
+  .articleModalBackdrop { padding: 12px; }
+  .articleModal { width: 100%; max-height: 92vh; border-radius: 18px; }
+  .articleHero { height: 190px; }
+  .articleModalBody { padding: 22px 20px 28px; }
+  .articleText { font-size: 16px; }
 }
