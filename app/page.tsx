@@ -18,6 +18,7 @@ export default async function Home() {
           title,
           url,
           published_at,
+          image_url,
           sources(name)
         )
       )
@@ -29,15 +30,6 @@ export default async function Home() {
 
   return (
     <main>
-      <header className="hero heroCompact">
-        <div>
-          <p className="eyebrow">BUTTER NEWS · VISUALIZATION V1</p>
-          <h1>See the shape of the news.</h1>
-          <p className="tagline">Each bubble is a story. Size it by exposure, momentum, coverage, or importance.</p>
-        </div>
-        <span className="status">{error ? "Connection issue" : "Live from Supabase"}</span>
-      </header>
-
       {error ? (
         <section className="panel errorBox">
           <strong>Supabase query failed.</strong>
@@ -48,8 +40,6 @@ export default async function Home() {
       ) : (
         <StoryBubbles stories={stories} />
       )}
-
-      <footer>Butter News · Bubble visualization prototype</footer>
     </main>
   );
 }
