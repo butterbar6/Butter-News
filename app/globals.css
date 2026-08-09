@@ -43,23 +43,23 @@ main {
   color: #111;
   background: linear-gradient(180deg, #ffd76a 0%, #f4bd39 100%);
   border-bottom: 2px solid #111;
-  padding: 8px 16px 9px;
+  padding: 7px 16px 8px;
   z-index: 5;
 }
 
 .brandBanner h1 {
   margin: 0;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(28px, 3.5vw, 54px);
+  font-size: clamp(28px, 3.2vw, 50px);
   line-height: .95;
   letter-spacing: .025em;
   font-weight: 800;
 }
 
 .brandBanner p {
-  margin: 6px 0 0;
+  margin: 5px 0 0;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(14px, 1.5vw, 22px);
+  font-size: clamp(14px, 1.35vw, 20px);
   line-height: 1;
   font-style: italic;
 }
@@ -68,9 +68,9 @@ main {
   flex: 0 0 auto;
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 9px;
   align-items: stretch;
-  padding: 9px 12px 8px;
+  padding: 7px 12px 6px;
   overflow-x: auto;
   overflow-y: hidden;
 }
@@ -78,8 +78,8 @@ main {
 .controlBar label {
   display: grid;
   gap: 3px;
-  min-width: 178px;
-  padding: 7px 11px;
+  min-width: 170px;
+  padding: 6px 10px;
   border: 1.5px solid #111;
   border-radius: 999px;
   background: rgba(255,255,255,.96);
@@ -112,6 +112,7 @@ main {
   height: auto;
   min-height: 0;
   max-height: none;
+  padding: 8px 18px 12px;
 }
 
 .storyCluster {
@@ -123,7 +124,7 @@ main {
   border-radius: 50%;
   border: 2.5px solid #111;
   color: #111;
-  padding: 18px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -133,9 +134,7 @@ main {
   transition: transform .18s ease, box-shadow .18s ease;
 }
 
-.solidBubble {
-  background-image: none !important;
-}
+.solidBubble { background-image: none !important; }
 
 .mainBubbleButton {
   position: absolute;
@@ -144,25 +143,25 @@ main {
 }
 
 .overviewCluster:hover .mainBubbleButton {
-  transform: scale(1.018);
-  box-shadow: 0 12px 28px rgba(0,0,0,.14);
+  transform: scale(1.012);
+  box-shadow: 0 11px 25px rgba(0,0,0,.13);
 }
 
 .storyBubble strong {
   display: block;
-  max-width: 86%;
-  font-size: clamp(12px, 1vw, 18px);
-  line-height: 1.05;
+  max-width: 82%;
+  font-size: clamp(11px, .9vw, 16px);
+  line-height: 1.02;
   font-weight: 900;
   overflow-wrap: anywhere;
   text-shadow: none;
 }
 
 .bubbleMetric {
-  margin-top: 8px;
+  margin-top: 7px;
   margin-bottom: 0;
   font-size: 8px;
-  letter-spacing: .06em;
+  letter-spacing: .05em;
   text-transform: uppercase;
   opacity: .76;
   text-shadow: none;
@@ -179,10 +178,10 @@ main {
 }
 
 .subBubbleDecorative {
-  width: 34px;
-  height: 34px;
-  margin-left: -17px;
-  margin-top: -17px;
+  width: 30px;
+  height: 30px;
+  margin-left: -15px;
+  margin-top: -15px;
   opacity: 1;
   transform: none !important;
   transition: none !important;
@@ -250,9 +249,7 @@ main {
   z-index: 4;
 }
 
-.focusMainBubble strong {
-  font-size: clamp(20px, 2vw, 29px);
-}
+.focusMainBubble strong { font-size: clamp(20px, 2vw, 29px); }
 
 .focusSubBubble {
   width: 130px;
@@ -372,21 +369,25 @@ main {
 .errorBox, .emptyBox { padding: 20px; }
 .errorBox p { margin-bottom: 0; opacity: .7; }
 
-@media (max-width: 1000px) {
-  .brandBanner h1 { font-size: 34px; }
-  .brandBanner p { font-size: 15px; }
-  .storyCluster { transform: translate(-50%, -50%) scale(.8); }
+@media (max-width: 1180px) {
+  .storyCluster { transform: translate(-50%, -50%) scale(.82); }
+}
+
+@media (max-width: 900px) {
+  .brandBanner h1 { font-size: 32px; }
+  .brandBanner p { font-size: 14px; }
+  .storyCluster { transform: translate(-50%, -50%) scale(.7); }
   .focusScene { transform: scale(.77); }
 }
 
 @media (max-width: 650px) {
-  .brandBanner { padding: 7px 10px; }
-  .brandBanner h1 { font-size: 25px; }
-  .brandBanner p { font-size: 12px; }
-  .controlBar { justify-content: flex-start; gap: 7px; padding: 6px 6px 5px; }
-  .controlBar label { min-width: 145px; padding: 6px 9px; }
-  .storyCluster { transform: translate(-50%, -50%) scale(.56); }
-  .subBubbleDecorative { width: 30px; height: 30px; margin-left: -15px; margin-top: -15px; }
+  .brandBanner { padding: 6px 8px; }
+  .brandBanner h1 { font-size: 24px; }
+  .brandBanner p { font-size: 11px; }
+  .controlBar { justify-content: flex-start; gap: 6px; padding: 5px 5px 4px; }
+  .controlBar label { min-width: 140px; padding: 5px 8px; }
+  .storyCluster { transform: translate(-50%, -50%) scale(.5); }
+  .subBubbleDecorative { width: 28px; height: 28px; margin-left: -14px; margin-top: -14px; }
   .focusScene { width: 100%; height: 620px; min-height: 620px; transform: scale(.58); }
   .articleModalBackdrop { padding: 12px; }
   .articleModal { width: 100%; max-height: 92vh; border-radius: 16px; }
