@@ -125,69 +125,83 @@ function makeRadialLayout(
   const height = 635;
   const centerX = width / 2;
   const centerY = height / 2;
-  const edgeGap = 8;
-  const clusterGap = 7;
+  const edgeGap = 6;
+  const clusterGap = 2;
   const satelliteRadius = 15;
 
   if (stories.length === 0) return { positions: [], sizes: [] };
   if (stories.length === 1) {
-    return { positions: [{ left: 50, top: 50 }], sizes: [Math.min(520, baseSizes[0] * 2.4)] };
+    return { positions: [{ left: 50, top: 50 }], sizes: [Math.min(560, baseSizes[0] * 2.65)] };
   }
 
   const outerCount = stories.length - 1;
   const seed = hashString(`${metric}:${stories.map((story) => story.id).join("|")}`);
   const random = seededRandom(seed);
 
+  // Keep an organic, stable order while still packing every outer cluster tightly around the center.
   const outerIndices = Array.from({ length: outerCount }, (_, i) => i + 1);
   for (let i = outerIndices.length - 1; i > 0; i -= 1) {
     const j = Math.floor(random() * (i + 1));
     [outerIndices[i], outerIndices[j]] = [outerIndices[j], outerIndices[i]];
   }
 
-  const baseStep = (Math.PI * 2) / outerCount;
-  const rotation = random() * Math.PI * 2;
-  const angles = outerIndices.map((_, slot) => {
-    const jitter = (random() - 0.5) * baseStep * 0.12;
-    return rotation + slot * baseStep + jitter;
-  });
+  function requiredAngle(distanceA: number, distanceB: number, radiusA: number, radiusB: number) {
+    const requiredDistance = radiusA + radiusB + clusterGap;
+    const denominator = 2 * distanceA * distanceB;
+    if (denominator <= 0) return Math.PI;
+    const cosine = Math.max(-1, Math.min(1,
+      (distanceA * distanceA + distanceB * distanceB - requiredDistance * requiredDistance) / denominator
+    ));
+    return Math.acos(cosine);
+  }
 
   function buildAtScale(scale: number) {
     const sizes = baseSizes.map((size) => size * scale);
-
-    // Collision radius includes the full decorative sub-bubble orbit.
     const radii = sizes.map((size) => {
-      const orbitExtra = Math.max(10, 22 * scale);
+      const orbitExtra = Math.max(7, 18 * scale);
       return size / 2 + orbitExtra + satelliteRadius;
     });
 
     const centerRadius = radii[0];
-    let ringRadius = Math.max(
-      ...outerIndices.map((index) => centerRadius + radii[index] + clusterGap)
-    );
+    const distances = outerIndices.map((index) => centerRadius + radii[index] + clusterGap);
 
-    for (let a = 0; a < outerCount; a += 1) {
-      for (let b = a + 1; b < outerCount; b += 1) {
-        let delta = Math.abs(angles[a] - angles[b]) % (Math.PI * 2);
-        if (delta > Math.PI) delta = Math.PI * 2 - delta;
-        const chordFactor = 2 * Math.sin(delta / 2);
-        if (chordFactor <= 0.0001) continue;
+    const separations = outerIndices.map((storyIndex, slot) => {
+      const nextSlot = (slot + 1) % outerCount;
+      const nextIndex = outerIndices[nextSlot];
+      return requiredAngle(
+        distances[slot],
+        distances[nextSlot],
+        radii[storyIndex],
+        radii[nextIndex]
+      );
+    });
 
-        const indexA = outerIndices[a];
-        const indexB = outerIndices[b];
-        const required = (radii[indexA] + radii[indexB] + clusterGap) / chordFactor;
-        ringRadius = Math.max(ringRadius, required);
-      }
+    const requiredArc = separations.reduce((sum, angle) => sum + angle, 0);
+    if (requiredArc > Math.PI * 2) {
+      return { sizes, positionsPx: [] as Array<{ x: number; y: number }>, fits: false };
+    }
+
+    // Distribute only the unavoidable leftover circumference. There is no common ring radius:
+    // each outer cluster is individually tangent to the center cluster.
+    const slack = (Math.PI * 2 - requiredArc) / outerCount;
+    const startAngle = random() * Math.PI * 2;
+    const angles: number[] = [];
+    let angle = startAngle;
+    for (let slot = 0; slot < outerCount; slot += 1) {
+      angles.push(angle);
+      angle += separations[slot] + slack;
     }
 
     const positionsPx: Array<{ x: number; y: number }> = stories.map(() => ({ x: centerX, y: centerY }));
     outerIndices.forEach((storyIndex, slot) => {
       positionsPx[storyIndex] = {
-        x: centerX + Math.cos(angles[slot]) * ringRadius,
-        y: centerY + Math.sin(angles[slot]) * ringRadius,
+        x: centerX + Math.cos(angles[slot]) * distances[slot],
+        y: centerY + Math.sin(angles[slot]) * distances[slot],
       };
     });
 
-    const fits = positionsPx.every((position, index) => {
+    // Strict full-pair collision validation plus screen-edge validation.
+    let fits = positionsPx.every((position, index) => {
       const radius = radii[index];
       return (
         position.x - radius >= edgeGap &&
@@ -197,15 +211,30 @@ function makeRadialLayout(
       );
     });
 
+    if (fits) {
+      for (let a = 0; a < positionsPx.length && fits; a += 1) {
+        for (let b = a + 1; b < positionsPx.length; b += 1) {
+          const distance = Math.hypot(
+            positionsPx[a].x - positionsPx[b].x,
+            positionsPx[a].y - positionsPx[b].y
+          );
+          if (distance + 0.01 < radii[a] + radii[b] + clusterGap) {
+            fits = false;
+            break;
+          }
+        }
+      }
+    }
+
     return { sizes, positionsPx, fits };
   }
 
-  // Search a wide scale range so the bubbles expand until the first screen/overlap limit is reached.
+  // Maximize every bubble together while preserving the area ratios and zero-overlap rule.
   let low = 0.05;
-  let high = 4;
+  let high = 5;
   let best = buildAtScale(low);
 
-  for (let iteration = 0; iteration < 34; iteration += 1) {
+  for (let iteration = 0; iteration < 38; iteration += 1) {
     const mid = (low + high) / 2;
     const candidate = buildAtScale(mid);
     if (candidate.fits) {
@@ -328,7 +357,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
                 <div className="decorativeOrbit" aria-hidden="true">
                   {items.map((item, itemIndex) => {
                     const angle = -Math.PI / 2 + (itemIndex / Math.max(items.length, 1)) * Math.PI * 2;
-                    const orbit = size / 2 + Math.max(10, 22 * scale);
+                    const orbit = size / 2 + Math.max(7, 18 * scale);
                     const left = size / 2 + Math.cos(angle) * orbit;
                     const top = size / 2 + Math.sin(angle) * orbit;
                     return (
