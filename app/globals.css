@@ -6,35 +6,44 @@
   color: #2b1f24;
 }
 
-body {
+html, body {
   margin: 0;
-  min-height: 100vh;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
   background: #f8dfe8;
 }
 
 button, select { font: inherit; }
 
 main {
-  width: min(1500px, calc(100% - 28px));
+  width: min(1500px, calc(100% - 24px));
+  height: 100svh;
   margin: 0 auto;
-  padding: 18px 0 28px;
+  padding: 10px 0;
 }
 
-.visualizerShell { min-height: calc(100vh - 46px); }
+.visualizerShell {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
 
 .controlBar {
+  flex: 0 0 auto;
   display: flex;
   gap: 12px;
   align-items: stretch;
-  padding: 0 0 14px;
+  padding: 0 0 10px;
   overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .controlBar label {
   display: grid;
   gap: 5px;
   min-width: 180px;
-  padding: 10px 12px;
+  padding: 9px 12px;
   border: 1px solid rgba(68, 43, 52, .16);
   border-radius: 14px;
   background: rgba(255,255,255,.5);
@@ -59,15 +68,16 @@ main {
 
 .bubbleStage {
   position: relative;
-  min-height: calc(100vh - 120px);
+  flex: 1 1 auto;
+  min-height: 0;
   border-radius: 28px;
   overflow: hidden;
 }
 
 .circularStage {
-  min-height: 980px;
-  height: calc(100vh - 105px);
-  max-height: 1120px;
+  height: auto;
+  min-height: 0;
+  max-height: none;
 }
 
 .storyCluster {
@@ -79,7 +89,7 @@ main {
   border-radius: 50%;
   border: 2px solid rgba(255,255,255,.88);
   color: white;
-  padding: 26px;
+  padding: 22px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -98,13 +108,13 @@ main {
 }
 
 .overviewCluster:hover .mainBubbleButton {
-  transform: scale(1.025);
-  box-shadow: 0 24px 52px rgba(75, 43, 55, .27);
-  filter: saturate(1.05);
+  transform: scale(1.02);
+  box-shadow: 0 22px 46px rgba(75, 43, 55, .25);
+  filter: saturate(1.04);
 }
 
 .storyBubble strong {
-  font-size: clamp(14px, 1.2vw, 19px);
+  font-size: clamp(12px, 1.05vw, 17px);
   line-height: 1.15;
   max-width: 92%;
   text-shadow: 0 2px 12px rgba(0,0,0,.48);
@@ -112,23 +122,23 @@ main {
 
 .storyBubble small {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  margin-top: 10px;
+  margin-top: 8px;
   max-width: 90%;
-  font-size: 11px;
-  line-height: 1.35;
+  font-size: 10px;
+  line-height: 1.3;
   opacity: .88;
   text-shadow: 0 2px 9px rgba(0,0,0,.5);
 }
 
 .bubbleMetric {
-  font-size: 9px;
+  font-size: 8px;
   letter-spacing: .09em;
   text-transform: uppercase;
   opacity: .78;
-  margin-bottom: 9px;
+  margin-bottom: 7px;
   text-shadow: 0 2px 8px rgba(0,0,0,.45);
 }
 
@@ -141,19 +151,28 @@ main {
   padding: 0;
   background-size: cover;
   background-position: center;
-  box-shadow: 0 9px 20px rgba(75,43,55,.24);
+  box-shadow: 0 8px 18px rgba(75,43,55,.22);
 }
 
 .subBubbleDecorative {
-  width: 64px;
-  height: 64px;
-  margin-left: -32px;
-  margin-top: -32px;
+  width: 46px;
+  height: 46px;
+  margin-left: -23px;
+  margin-top: -23px;
   opacity: .98;
+  transform: none !important;
+  transition: none !important;
+  filter: none !important;
+}
+
+.overviewView .subBubbleDecorative:hover {
+  transform: none !important;
+  box-shadow: 0 8px 18px rgba(75,43,55,.22) !important;
+  filter: none !important;
 }
 
 .focusView {
-  min-height: 900px;
+  min-height: 0;
   display: grid;
   place-items: center;
   animation: zoomInView .42s ease both;
@@ -181,8 +200,8 @@ main {
 .focusScene {
   position: relative;
   width: min(920px, 92vw);
-  height: min(820px, 82vh);
-  min-height: 700px;
+  height: min(720px, calc(100svh - 120px));
+  min-height: 620px;
 }
 
 .focusOrbitRing {
@@ -332,26 +351,17 @@ main {
 .errorBox p { margin-bottom: 0; opacity: .7; }
 
 @media (max-width: 900px) {
-  .circularStage {
-    min-height: 1050px;
-    height: 1050px;
-  }
-  .storyCluster { transform: translate(-50%, -50%) scale(.84); }
-  .focusScene { transform: scale(.83); }
+  .storyCluster { transform: translate(-50%, -50%) scale(.76); }
+  .focusScene { transform: scale(.78); }
 }
 
 @media (max-width: 650px) {
-  main { width: min(100% - 14px, 1500px); padding-top: 10px; }
-  .controlBar label { min-width: 155px; }
-  .circularStage {
-    min-height: 920px;
-    height: 920px;
-    overflow: visible;
-  }
-  .storyCluster { transform: translate(-50%, -50%) scale(.68); }
-  .subBubbleDecorative { width: 58px; height: 58px; margin-left: -29px; margin-top: -29px; }
-  .focusView { min-height: 760px; overflow: visible; }
-  .focusScene { width: 100%; height: 700px; min-height: 700px; transform: scale(.62); }
+  main { width: min(100% - 10px, 1500px); padding-top: 6px; padding-bottom: 6px; }
+  .controlBar { gap: 8px; padding-bottom: 6px; }
+  .controlBar label { min-width: 145px; padding: 7px 9px; }
+  .storyCluster { transform: translate(-50%, -50%) scale(.56); }
+  .subBubbleDecorative { width: 42px; height: 42px; margin-left: -21px; margin-top: -21px; }
+  .focusScene { width: 100%; height: 650px; min-height: 650px; transform: scale(.58); }
   .articleModalBackdrop { padding: 12px; }
   .articleModal { width: 100%; max-height: 92vh; border-radius: 18px; }
   .articleHero { height: 190px; }
