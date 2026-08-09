@@ -20,9 +20,7 @@ main {
   padding: 18px 0 28px;
 }
 
-.visualizerShell {
-  min-height: calc(100vh - 46px);
-}
+.visualizerShell { min-height: calc(100vh - 46px); }
 
 .controlBar {
   display: flex;
@@ -78,8 +76,6 @@ main {
 }
 
 .storyBubble {
-  position: absolute;
-  inset: 0;
   border-radius: 50%;
   border: 2px solid rgba(255,255,255,.88);
   color: white;
@@ -95,7 +91,13 @@ main {
   transition: transform .22s ease, box-shadow .22s ease, filter .22s ease;
 }
 
-.storyCluster:hover .storyBubble {
+.mainBubbleButton {
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+}
+
+.overviewCluster:hover .mainBubbleButton {
   transform: scale(1.025);
   box-shadow: 0 24px 52px rgba(75, 43, 55, .27);
   filter: saturate(1.05);
@@ -130,27 +132,123 @@ main {
   text-shadow: 0 2px 8px rgba(0,0,0,.45);
 }
 
+.decorativeOrbit { pointer-events: none; }
+
 .subBubble {
   position: absolute;
+  border-radius: 50%;
+  border: 3px solid rgba(255,255,255,.95);
+  padding: 0;
+  background-size: cover;
+  background-position: center;
+  box-shadow: 0 9px 20px rgba(75,43,55,.24);
+}
+
+.subBubbleDecorative {
   width: 64px;
   height: 64px;
   margin-left: -32px;
   margin-top: -32px;
-  border-radius: 50%;
-  border: 3px solid rgba(255,255,255,.95);
-  padding: 0;
+  opacity: .98;
+}
+
+.focusView {
+  min-height: 900px;
+  display: grid;
+  place-items: center;
+  animation: zoomInView .42s ease both;
+}
+
+@keyframes zoomInView {
+  from { opacity: 0; transform: scale(.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.backButton {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 20;
+  border: 1px solid rgba(68,43,52,.16);
+  background: rgba(255,255,255,.72);
+  color: #2b1f24;
+  border-radius: 999px;
+  padding: 10px 15px;
   cursor: pointer;
-  background-size: cover;
-  background-position: center;
-  box-shadow: 0 9px 20px rgba(75,43,55,.24);
-  transition: transform .18s ease, box-shadow .18s ease;
+  font-weight: 700;
+}
+
+.focusScene {
+  position: relative;
+  width: min(920px, 92vw);
+  height: min(820px, 82vh);
+  min-height: 700px;
+}
+
+.focusOrbitRing {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 570px;
+  height: 570px;
+  transform: translate(-50%, -50%);
+  border: 1.5px dashed rgba(193, 80, 119, .5);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.focusMainBubble {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 340px;
+  height: 340px;
+  transform: translate(-50%, -50%);
   z-index: 4;
 }
 
-.subBubble:hover {
-  transform: scale(1.12);
-  box-shadow: 0 14px 30px rgba(75,43,55,.34);
-  z-index: 8;
+.focusMainBubble strong {
+  font-size: clamp(20px, 2vw, 29px);
+}
+
+.focusMainBubble small {
+  font-size: 12px;
+  -webkit-line-clamp: 4;
+}
+
+.focusSubBubble {
+  width: 130px;
+  height: 130px;
+  margin-left: -65px;
+  margin-top: -65px;
+  cursor: pointer;
+  color: white;
+  display: grid;
+  place-items: center;
+  padding: 12px;
+  text-align: center;
+  z-index: 6;
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+}
+
+.focusSubBubble span {
+  font-size: 11px;
+  line-height: 1.15;
+  font-weight: 800;
+  text-transform: none;
+  letter-spacing: 0;
+  opacity: 1;
+  text-shadow: 0 2px 10px rgba(0,0,0,.72);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.focusSubBubble:hover {
+  transform: scale(1.08);
+  box-shadow: 0 15px 32px rgba(75,43,55,.32);
+  filter: saturate(1.06);
 }
 
 .articleModalBackdrop {
@@ -198,9 +296,7 @@ main {
   background-position: center;
 }
 
-.articleModalBody {
-  padding: 30px 34px 36px;
-}
+.articleModalBody { padding: 30px 34px 36px; }
 
 .articleMeta {
   margin: 0 0 10px;
@@ -224,9 +320,7 @@ main {
   color: #382a30;
 }
 
-.articleText p {
-  margin: 0 0 1.15em;
-}
+.articleText p { margin: 0 0 1.15em; }
 
 .panel {
   border: 1px solid rgba(68,43,52,.16);
@@ -242,9 +336,8 @@ main {
     min-height: 1050px;
     height: 1050px;
   }
-  .storyCluster {
-    transform: translate(-50%, -50%) scale(.84);
-  }
+  .storyCluster { transform: translate(-50%, -50%) scale(.84); }
+  .focusScene { transform: scale(.83); }
 }
 
 @media (max-width: 650px) {
@@ -255,10 +348,10 @@ main {
     height: 920px;
     overflow: visible;
   }
-  .storyCluster {
-    transform: translate(-50%, -50%) scale(.68);
-  }
-  .subBubble { width: 58px; height: 58px; margin-left: -29px; margin-top: -29px; }
+  .storyCluster { transform: translate(-50%, -50%) scale(.68); }
+  .subBubbleDecorative { width: 58px; height: 58px; margin-left: -29px; margin-top: -29px; }
+  .focusView { min-height: 760px; overflow: visible; }
+  .focusScene { width: 100%; height: 700px; min-height: 700px; transform: scale(.62); }
   .articleModalBackdrop { padding: 12px; }
   .articleModal { width: 100%; max-height: 92vh; border-radius: 18px; }
   .articleHero { height: 190px; }
