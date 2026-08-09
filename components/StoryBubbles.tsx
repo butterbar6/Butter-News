@@ -90,8 +90,13 @@ function shortTopic(title: string) {
     .replace(/React(s|ing)? to /gi, "")
     .trim();
 
-  const words = cleaned.split(/\s+/).filter(Boolean);
-  return words.slice(0, 3).join(" ");
+  return cleaned.split(/\s+/).filter(Boolean).slice(0, 3).join(" ");
+}
+
+function topicForSize(title: string, size: number) {
+  const words = shortTopic(title).split(/\s+/).filter(Boolean);
+  const count = size < 105 ? 1 : size < 145 ? 2 : 3;
+  return words.slice(0, count).join(" ");
 }
 
 function hashString(value: string) {
@@ -116,26 +121,23 @@ function makeRadialLayout(
   baseSizes: number[],
   metric: MetricKey
 ): RadialLayout {
-  const width = 1400;
-  const height = 610;
+  const width = 1480;
+  const height = 635;
   const centerX = width / 2;
   const centerY = height / 2;
-  const edgeGap = 10;
-  const clusterGap = 8;
-  const orbitPadding = 42; // includes decorative satellite orbit and satellite radius
+  const edgeGap = 8;
+  const clusterGap = 7;
+  const satelliteRadius = 15;
 
   if (stories.length === 0) return { positions: [], sizes: [] };
   if (stories.length === 1) {
-    return { positions: [{ left: 50, top: 50 }], sizes: baseSizes };
+    return { positions: [{ left: 50, top: 50 }], sizes: [Math.min(520, baseSizes[0] * 2.4)] };
   }
 
-  // Stories are already sorted largest-to-smallest by the selected metric,
-  // so index 0 is always the central/main story.
   const outerCount = stories.length - 1;
   const seed = hashString(`${metric}:${stories.map((story) => story.id).join("|")}`);
   const random = seededRandom(seed);
 
-  // Create a stable organic-looking circular order and slight angular jitter.
   const outerIndices = Array.from({ length: outerCount }, (_, i) => i + 1);
   for (let i = outerIndices.length - 1; i > 0; i -= 1) {
     const j = Math.floor(random() * (i + 1));
@@ -145,21 +147,24 @@ function makeRadialLayout(
   const baseStep = (Math.PI * 2) / outerCount;
   const rotation = random() * Math.PI * 2;
   const angles = outerIndices.map((_, slot) => {
-    const jitter = (random() - 0.5) * baseStep * 0.18;
+    const jitter = (random() - 0.5) * baseStep * 0.12;
     return rotation + slot * baseStep + jitter;
   });
 
   function buildAtScale(scale: number) {
-    const sizes = baseSizes.map((size) => Math.max(54, size * scale));
-    const radii = sizes.map((size) => size / 2 + orbitPadding * scale);
-    const centerRadius = radii[0];
+    const sizes = baseSizes.map((size) => size * scale);
 
-    // Start with the smallest radius that clears the center cluster.
+    // Collision radius includes the full decorative sub-bubble orbit.
+    const radii = sizes.map((size) => {
+      const orbitExtra = Math.max(10, 22 * scale);
+      return size / 2 + orbitExtra + satelliteRadius;
+    });
+
+    const centerRadius = radii[0];
     let ringRadius = Math.max(
       ...outerIndices.map((index) => centerRadius + radii[index] + clusterGap)
     );
 
-    // Increase ring radius until EVERY outer cluster clears every other cluster.
     for (let a = 0; a < outerCount; a += 1) {
       for (let b = a + 1; b < outerCount; b += 1) {
         let delta = Math.abs(angles[a] - angles[b]) % (Math.PI * 2);
@@ -192,15 +197,15 @@ function makeRadialLayout(
       );
     });
 
-    return { sizes, radii, ringRadius, positionsPx, fits };
+    return { sizes, positionsPx, fits };
   }
 
-  // Find the largest global scale that guarantees zero overlap and remains on-screen.
-  let low = 0.22;
-  let high = 1;
+  // Search a wide scale range so the bubbles expand until the first screen/overlap limit is reached.
+  let low = 0.05;
+  let high = 4;
   let best = buildAtScale(low);
 
-  for (let iteration = 0; iteration < 26; iteration += 1) {
+  for (let iteration = 0; iteration < 34; iteration += 1) {
     const mid = (low + high) / 2;
     const candidate = buildAtScale(mid);
     if (candidate.fits) {
@@ -238,12 +243,10 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   const maxValue = Math.max(...displayed.map((story) => metricValue(story, metric)), 1);
 
   function baseSizeFor(value: number) {
-    // Bubble AREA is proportional to the selected metric.
-    // Therefore diameter scales with sqrt(metric / maxMetric).
-    const maxDiameter = 210;
-    const minDiameter = 82;
-    const proportionalDiameter = maxDiameter * Math.sqrt(Math.max(value, 0) / maxValue);
-    return Math.max(minDiameter, proportionalDiameter);
+    // Area is proportional to score, so diameter scales with sqrt(score).
+    const referenceDiameter = 210;
+    const ratio = Math.max(value, 1) / maxValue;
+    return referenceDiameter * Math.sqrt(ratio);
   }
 
   const baseSizes = displayed.map((story) => baseSizeFor(metricValue(story, metric)));
@@ -291,6 +294,9 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
             const position = layout.positions[storyIndex];
             const items = flattenItems(story).slice(0, 8);
             const bubbleColor = bubbleColors[storyIndex % bubbleColors.length];
+            const scale = size / Math.max(baseSizes[storyIndex], 1);
+            const topicFont = Math.max(10, Math.min(24, size * 0.1));
+            const metricFont = Math.max(7, Math.min(12, size * 0.047));
 
             return (
               <div
@@ -312,16 +318,17 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
                     width: size,
                     height: size,
                     backgroundColor: bubbleColor,
+                    padding: Math.max(8, size * 0.085),
                   }}
                 >
-                  <strong>{shortTopic(story.title)}</strong>
-                  <span className="bubbleMetric">{metricLabels[metric]} {value}</span>
+                  <strong style={{ fontSize: topicFont }}>{topicForSize(story.title, size)}</strong>
+                  <span className="bubbleMetric" style={{ fontSize: metricFont }}>{metricLabels[metric]} {value}</span>
                 </button>
 
                 <div className="decorativeOrbit" aria-hidden="true">
                   {items.map((item, itemIndex) => {
                     const angle = -Math.PI / 2 + (itemIndex / Math.max(items.length, 1)) * Math.PI * 2;
-                    const orbit = size / 2 + Math.max(12, 22 * (size / Math.max(baseSizes[storyIndex], 1)));
+                    const orbit = size / 2 + Math.max(10, 22 * scale);
                     const left = size / 2 + Math.cos(angle) * orbit;
                     const top = size / 2 + Math.sin(angle) * orbit;
                     return (
