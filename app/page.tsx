@@ -17,6 +17,8 @@ export default async function Home() {
           id,
           title,
           url,
+          content,
+          author,
           published_at,
           image_url,
           sources(name)
