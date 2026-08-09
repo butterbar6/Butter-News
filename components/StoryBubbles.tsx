@@ -35,6 +35,19 @@ const metricLabels: Record<MetricKey, string> = {
   importance_score: "Importance",
 };
 
+const bubbleColors = [
+  "#ff725e",
+  "#5b8fe8",
+  "#82cf77",
+  "#a896df",
+  "#ffad3d",
+  "#62c9c5",
+  "#ffd54f",
+  "#ee7aa8",
+  "#67b7d8",
+  "#8e83d8",
+];
+
 function metricValue(story: BubbleStory, metric: MetricKey) {
   if (metric === "importance_score") return Number(story.importance_score ?? 0);
   return Number(story.story_metrics?.find((m) => m.metric_type === metric)?.metric_value ?? 0);
@@ -51,14 +64,32 @@ function fallbackImage(seed: string) {
   return `https://picsum.photos/seed/${encodeURIComponent(seed)}/800/800`;
 }
 
-function storyImage(story: BubbleStory) {
-  return flattenItems(story).find((item) => item.image_url)?.image_url ?? fallbackImage(story.id);
-}
-
 function sourceName(source: Source) {
   if (!source) return "Source";
   if (Array.isArray(source)) return source[0]?.name ?? "Source";
   return source.name;
+}
+
+function shortTopic(title: string) {
+  const cleaned = title
+    .replace(/Major /gi, "")
+    .replace(/New /gi, "")
+    .replace(/Across the /gi, "")
+    .replace(/Across /gi, "")
+    .replace(/Following /gi, "")
+    .replace(/Continues? to /gi, "")
+    .replace(/Industry /gi, "")
+    .replace(/Sector /gi, "")
+    .replace(/Development /gi, "")
+    .replace(/Program /gi, "")
+    .replace(/Announces? /gi, "")
+    .replace(/Expands? /gi, "")
+    .replace(/Accelerates? /gi, "")
+    .replace(/React(s|ing)? to /gi, "")
+    .trim();
+
+  const words = cleaned.split(/\s+/).filter(Boolean);
+  return words.slice(0, 4).join(" ");
 }
 
 export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
@@ -81,19 +112,30 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   const max = values.length ? Math.max(...values) : 1;
 
   function sizeFor(value: number) {
-    if (max === min) return 176;
+    if (max === min) return 164;
     const normalized = Math.max(0, Math.min(1, (value - min) / (max - min)));
-    return Math.round(120 + Math.sqrt(normalized) * 100);
+    return Math.round(118 + Math.sqrt(normalized) * 92);
   }
 
   function clusterPosition(index: number, count: number) {
     if (count === 1) return { left: 50, top: 50 };
-    const angle = -Math.PI / 2 + (index / count) * Math.PI * 2;
-    const radiusX = count <= 4 ? 25 : 30;
-    const radiusY = count <= 4 ? 24 : 28;
-    return {
-      left: 50 + Math.cos(angle) * radiusX,
-      top: 50 + Math.sin(angle) * radiusY,
+
+    const slots = [
+      { left: 50, top: 48 },
+      { left: 28, top: 24 },
+      { left: 50, top: 20 },
+      { left: 72, top: 24 },
+      { left: 18, top: 50 },
+      { left: 82, top: 50 },
+      { left: 27, top: 76 },
+      { left: 46, top: 78 },
+      { left: 64, top: 78 },
+      { left: 80, top: 74 },
+    ];
+
+    return slots[index] ?? {
+      left: 50 + Math.cos((index / count) * Math.PI * 2) * 30,
+      top: 50 + Math.sin((index / count) * Math.PI * 2) * 28,
     };
   }
 
@@ -111,7 +153,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
       <label>
         <span>Stories shown</span>
         <select value={limit} onChange={(e) => setLimit(Number(e.target.value))}>
-          {Array.from({ length: stories.length }, (_, i) => i + 1).map((n) => (
+          {Array.from({ length: Math.min(10, stories.length) }, (_, i) => i + 1).map((n) => (
             <option key={n} value={n}>{n}</option>
           ))}
         </select>
@@ -128,6 +170,11 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
 
   return (
     <div className="visualizerShell">
+      <header className="brandBanner">
+        <h1>QUANTUM AMERICA</h1>
+        <p>The Answer to 1984 is 1776</p>
+      </header>
+
       {controls}
 
       {!selectedStory ? (
@@ -135,9 +182,9 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
           {displayed.map((story, storyIndex) => {
             const value = metricValue(story, metric);
             const size = sizeFor(value);
-            const image = storyImage(story);
             const position = clusterPosition(storyIndex, displayed.length);
             const items = flattenItems(story).slice(0, 8);
+            const bubbleColor = bubbleColors[storyIndex % bubbleColors.length];
 
             return (
               <div
@@ -152,27 +199,25 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
               >
                 <button
                   type="button"
-                  className="storyBubble imageBubble mainBubbleButton"
+                  className="storyBubble mainBubbleButton solidBubble"
                   onClick={() => setSelectedStoryId(story.id)}
                   aria-label={`Open story: ${story.title}`}
                   style={{
                     width: size,
                     height: size,
-                    backgroundImage: `linear-gradient(rgba(0,0,0,.46), rgba(0,0,0,.68)), url(${image})`,
+                    backgroundColor: bubbleColor,
                   }}
                 >
+                  <strong>{shortTopic(story.title)}</strong>
                   <span className="bubbleMetric">{metricLabels[metric]} {value}</span>
-                  <strong>{story.title}</strong>
-                  {story.summary && <small>{story.summary}</small>}
                 </button>
 
                 <div className="decorativeOrbit" aria-hidden="true">
                   {items.map((item, itemIndex) => {
                     const angle = -Math.PI / 2 + (itemIndex / Math.max(items.length, 1)) * Math.PI * 2;
-                    const orbit = size / 2 + 30;
+                    const orbit = size / 2 + 26;
                     const left = size / 2 + Math.cos(angle) * orbit;
                     const top = size / 2 + Math.sin(angle) * orbit;
-                    const itemImage = item.image_url ?? fallbackImage(item.id);
                     return (
                       <span
                         key={item.id}
@@ -180,7 +225,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
                         style={{
                           left,
                           top,
-                          backgroundImage: `linear-gradient(rgba(0,0,0,.08), rgba(0,0,0,.18)), url(${itemImage})`,
+                          backgroundColor: bubbleColor,
                         }}
                       />
                     );
@@ -198,14 +243,11 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
             <div className="focusOrbitRing" />
 
             <div
-              className="storyBubble focusMainBubble"
-              style={{
-                backgroundImage: `linear-gradient(rgba(0,0,0,.46), rgba(0,0,0,.7)), url(${storyImage(selectedStory)})`,
-              }}
+              className="storyBubble focusMainBubble solidBubble"
+              style={{ backgroundColor: bubbleColors[Math.max(0, stories.findIndex((s) => s.id === selectedStory.id)) % bubbleColors.length] }}
             >
+              <strong>{shortTopic(selectedStory.title)}</strong>
               <span className="bubbleMetric">{metricLabels[metric]} {metricValue(selectedStory, metric)}</span>
-              <strong>{selectedStory.title}</strong>
-              {selectedStory.summary && <small>{selectedStory.summary}</small>}
             </div>
 
             {flattenItems(selectedStory).slice(0, 10).map((item, index, allItems) => {
@@ -261,7 +303,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
                 {openItem.content ? (
                   openItem.content.split("\n").filter(Boolean).map((paragraph, index) => <p key={index}>{paragraph}</p>)
                 ) : (
-                  <p>This test article does not yet contain a full article body. When real article content is ingested into Supabase, it will appear here without redirecting away from Butter News.</p>
+                  <p>This test article does not yet contain a full article body. When real article content is ingested into Supabase, it will appear here without redirecting away from Quantum America.</p>
                 )}
               </div>
             </div>
