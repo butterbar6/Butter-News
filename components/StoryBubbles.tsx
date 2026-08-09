@@ -4,7 +4,14 @@ import { useMemo, useState } from "react";
 
 type Metric = { metric_type: string; metric_value: number };
 type Source = { name: string } | { name: string }[] | null;
-type Item = { id: string; title: string; url: string; published_at: string | null; sources: Source };
+type Item = {
+  id: string;
+  title: string;
+  url: string;
+  published_at: string | null;
+  image_url: string | null;
+  sources: Source;
+};
 type StoryItem = { items: Item | Item[] | null };
 
 export type BubbleStory = {
@@ -31,12 +38,6 @@ function metricValue(story: BubbleStory, metric: MetricKey) {
   return Number(story.story_metrics?.find((m) => m.metric_type === metric)?.metric_value ?? 0);
 }
 
-function sourceName(source: Source) {
-  if (!source) return "Source";
-  if (Array.isArray(source)) return source[0]?.name ?? "Source";
-  return source.name;
-}
-
 function flattenItems(story: BubbleStory) {
   return (story.story_items ?? []).flatMap((row) => {
     if (!row.items) return [];
@@ -44,10 +45,18 @@ function flattenItems(story: BubbleStory) {
   });
 }
 
+function fallbackImage(seed: string) {
+  return `https://picsum.photos/seed/${encodeURIComponent(seed)}/800/800`;
+}
+
+function storyImage(story: BubbleStory) {
+  return flattenItems(story).find((item) => item.image_url)?.image_url ?? fallbackImage(story.id);
+}
+
 export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   const [metric, setMetric] = useState<MetricKey>("exposure_score");
   const [limit, setLimit] = useState(Math.min(10, Math.max(1, stories.length)));
-  const [selectedId, setSelectedId] = useState<string | null>(stories[0]?.id ?? null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const displayed = useMemo(
     () => [...stories].sort((a, b) => metricValue(b, metric) - metricValue(a, metric)).slice(0, limit),
@@ -57,12 +66,12 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   const values = displayed.map((story) => metricValue(story, metric));
   const min = Math.min(...values, 0);
   const max = Math.max(...values, 1);
-  const selected = stories.find((story) => story.id === selectedId) ?? displayed[0] ?? null;
+  const selected = selectedId ? stories.find((story) => story.id === selectedId) ?? null : null;
   const selectedItems = selected ? flattenItems(selected) : [];
 
   function sizeFor(value: number) {
     const normalized = max === min ? 0.65 : (value - min) / (max - min);
-    return Math.round(118 + Math.sqrt(Math.max(0, normalized)) * 145);
+    return Math.round(130 + Math.sqrt(Math.max(0, normalized)) * 155);
   }
 
   return (
@@ -86,63 +95,76 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
           </select>
         </label>
 
-        <div className="controlReadout">
+        <label>
           <span>Visualization</span>
-          <strong>Bubble graph</strong>
-        </div>
+          <select value="bubble_graph" onChange={() => {}}>
+            <option value="bubble_graph">Bubble graph</option>
+          </select>
+        </label>
       </div>
 
-      <div className="visualizerGrid">
-        <section className="bubbleStage" aria-label="Story bubble visualization">
-          {displayed.map((story, index) => {
+      {!selected ? (
+        <section className="bubbleStage overviewStage" aria-label="Story bubble visualization">
+          {displayed.map((story) => {
             const value = metricValue(story, metric);
             const size = sizeFor(value);
+            const image = storyImage(story);
+
             return (
               <button
                 key={story.id}
-                className={`storyBubble bubble-${index % 5} ${selected?.id === story.id ? "selected" : ""}`}
-                style={{ width: size, height: size }}
+                className="storyBubble imageBubble"
+                style={{
+                  width: size,
+                  height: size,
+                  backgroundImage: `linear-gradient(rgba(0,0,0,.48), rgba(0,0,0,.68)), url(${image})`,
+                }}
                 onClick={() => setSelectedId(story.id)}
                 aria-label={`Open ${story.title}`}
               >
                 <span className="bubbleMetric">{metricLabels[metric]} {value}</span>
                 <strong>{story.title}</strong>
+                {story.summary && <small>{story.summary}</small>}
               </button>
             );
           })}
         </section>
+      ) : (
+        <section className="focusStage" aria-label="Selected story and associated articles">
+          <button className="backButton" onClick={() => setSelectedId(null)}>← All stories</button>
 
-        <aside className="storyDrawer">
-          {selected ? (
-            <>
-              <p className="drawerEyebrow">SELECTED STORY</p>
-              <h2>{selected.title}</h2>
-              {selected.summary && <p className="drawerSummary">{selected.summary}</p>}
+          <div className="focusCluster">
+            <div
+              className="storyBubble focusMainBubble"
+              style={{
+                backgroundImage: `linear-gradient(rgba(0,0,0,.48), rgba(0,0,0,.7)), url(${storyImage(selected)})`,
+              }}
+            >
+              <span className="bubbleMetric">{metricLabels[metric]} {metricValue(selected, metric)}</span>
+              <strong>{selected.title}</strong>
+              {selected.summary && <small>{selected.summary}</small>}
+            </div>
 
-              <div className="metricStrip">
-                <div><strong>{metricValue(selected, "exposure_score")}</strong><span>Exposure</span></div>
-                <div><strong>{metricValue(selected, "momentum")}</strong><span>Momentum</span></div>
-                <div><strong>{metricValue(selected, "article_count")}</strong><span>Coverage</span></div>
-              </div>
-
-              <div className="articleHeading">
-                <h3>Associated articles</h3>
-                <span>{selectedItems.length}</span>
-              </div>
-
-              <div className="articleList">
-                {selectedItems.length ? selectedItems.map((item) => (
-                  <a key={item.id} href={item.url} target="_blank" rel="noreferrer" className="articleLink">
-                    <span>{sourceName(item.sources)}</span>
-                    <strong>{item.title}</strong>
-                    <small>{item.published_at ? new Date(item.published_at).toLocaleString() : "Test article"}</small>
-                  </a>
-                )) : <p className="noArticles">No associated articles found.</p>}
-              </div>
-            </>
-          ) : <p>Select a story bubble.</p>}
-        </aside>
-      </div>
+            <div className="subBubbleOrbit">
+              {selectedItems.map((item, index) => {
+                const image = item.image_url ?? fallbackImage(item.id);
+                return (
+                  <a
+                    key={item.id}
+                    href={item.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`subBubble subBubble-${index % 8}`}
+                    title={item.title}
+                    aria-label={`Open article: ${item.title}`}
+                    style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.12), rgba(0,0,0,.2)), url(${image})` }}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 }
