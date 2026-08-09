@@ -26,6 +26,7 @@ export type BubbleStory = {
 };
 
 type MetricKey = "exposure_score" | "momentum" | "article_count" | "source_count" | "importance_score";
+type PackedPosition = { left: number; top: number };
 
 const metricLabels: Record<MetricKey, string> = {
   exposure_score: "Exposure",
@@ -92,6 +93,106 @@ function shortTopic(title: string) {
   return words.slice(0, 3).join(" ");
 }
 
+function hashString(value: string) {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function seededRandom(seed: number) {
+  let state = seed || 1;
+  return () => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return state / 4294967296;
+  };
+}
+
+function packRandomly(stories: BubbleStory[], sizes: number[], metric: MetricKey): PackedPosition[] {
+  const width = 1400;
+  const height = 610;
+  const gap = 10;
+  const orbitPadding = 42;
+
+  const entries = stories.map((story, index) => ({
+    story,
+    index,
+    radius: sizes[index] / 2 + orbitPadding,
+  }));
+
+  const ordered = [...entries].sort((a, b) => b.radius - a.radius);
+  const placed: Array<{ index: number; x: number; y: number; radius: number }> = [];
+  const seed = hashString(`${metric}:${stories.map((story) => story.id).join("|")}`);
+  const random = seededRandom(seed);
+
+  for (const entry of ordered) {
+    let best: { x: number; y: number; score: number } | null = null;
+
+    for (let attempt = 0; attempt < 5000; attempt += 1) {
+      const minX = entry.radius + gap;
+      const maxX = width - entry.radius - gap;
+      const minY = entry.radius + gap;
+      const maxY = height - entry.radius - gap;
+
+      if (maxX <= minX || maxY <= minY) continue;
+
+      const x = minX + random() * (maxX - minX);
+      const y = minY + random() * (maxY - minY);
+
+      let valid = true;
+      let nearest = Number.POSITIVE_INFINITY;
+
+      for (const existing of placed) {
+        const distance = Math.hypot(x - existing.x, y - existing.y);
+        const required = entry.radius + existing.radius + gap;
+        if (distance < required) {
+          valid = false;
+          break;
+        }
+        nearest = Math.min(nearest, distance - required);
+      }
+
+      if (!valid) continue;
+
+      const edgeClearance = Math.min(
+        x - entry.radius,
+        width - x - entry.radius,
+        y - entry.radius,
+        height - y - entry.radius
+      );
+
+      const centerDistance = Math.hypot(x - width / 2, y - height / 2);
+      const score = (Number.isFinite(nearest) ? nearest : 200) + edgeClearance * 0.22 - centerDistance * 0.03;
+
+      if (!best || score > best.score) best = { x, y, score };
+    }
+
+    if (!best) {
+      const columns = 5;
+      const slot = placed.length;
+      best = {
+        x: ((slot % columns) + 0.5) * (width / columns),
+        y: (Math.floor(slot / columns) + 0.5) * (height / 2),
+        score: 0,
+      };
+    }
+
+    placed.push({ index: entry.index, x: best.x, y: best.y, radius: entry.radius });
+  }
+
+  const positions: PackedPosition[] = stories.map(() => ({ left: 50, top: 50 }));
+  for (const item of placed) {
+    positions[item.index] = {
+      left: (item.x / width) * 100,
+      top: (item.y / height) * 100,
+    };
+  }
+
+  return positions;
+}
+
 export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   const [metric, setMetric] = useState<MetricKey>("exposure_score");
   const [limit, setLimit] = useState(Math.min(10, Math.max(1, stories.length)));
@@ -107,36 +208,22 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
     ? stories.find((story) => story.id === selectedStoryId) ?? null
     : null;
 
-  const values = displayed.map((story) => metricValue(story, metric));
-  const min = values.length ? Math.min(...values) : 0;
-  const max = values.length ? Math.max(...values) : 1;
+  const maxValue = Math.max(...displayed.map((story) => metricValue(story, metric)), 1);
 
   function sizeFor(value: number) {
-    if (max === min) return 162;
-    const normalized = Math.max(0, Math.min(1, (value - min) / (max - min)));
-    return Math.round(126 + Math.sqrt(normalized) * 62);
+    // Bubble AREA is proportional to the selected metric.
+    // Since area = pi * r^2, diameter must scale with sqrt(score).
+    const maxDiameter = 188;
+    const minDiameter = 82;
+    const proportionalDiameter = maxDiameter * Math.sqrt(Math.max(value, 0) / maxValue);
+    return Math.round(Math.max(minDiameter, proportionalDiameter));
   }
 
-  function clusterPosition(index: number, count: number) {
-    if (count === 1) return { left: 50, top: 50 };
-
-    if (count <= 5) {
-      const spacing = 80 / Math.max(count - 1, 1);
-      return { left: 10 + index * spacing, top: 50 };
-    }
-
-    const firstRow = Math.ceil(count / 2);
-    const secondRow = count - firstRow;
-    const isFirstRow = index < firstRow;
-    const rowIndex = isFirstRow ? index : index - firstRow;
-    const rowCount = isFirstRow ? firstRow : secondRow;
-    const left = rowCount === 1 ? 50 : 9 + rowIndex * (82 / Math.max(rowCount - 1, 1));
-
-    return {
-      left,
-      top: isFirstRow ? 28 : 72,
-    };
-  }
+  const sizes = displayed.map((story) => sizeFor(metricValue(story, metric)));
+  const positions = useMemo(
+    () => packRandomly(displayed, sizes, metric),
+    [displayed, metric, sizes.join(",")]
+  );
 
   const controls = (
     <div className="controlBar">
@@ -157,13 +244,6 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
           ))}
         </select>
       </label>
-
-      <label>
-        <span>Visualization</span>
-        <select value="bubble_graph" onChange={() => {}}>
-          <option value="bubble_graph">Bubble graph</option>
-        </select>
-      </label>
     </div>
   );
 
@@ -180,8 +260,8 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
         <section className="bubbleStage circularStage overviewView" aria-label="Story bubble visualization">
           {displayed.map((story, storyIndex) => {
             const value = metricValue(story, metric);
-            const size = sizeFor(value);
-            const position = clusterPosition(storyIndex, displayed.length);
+            const size = sizes[storyIndex];
+            const position = positions[storyIndex];
             const items = flattenItems(story).slice(0, 8);
             const bubbleColor = bubbleColors[storyIndex % bubbleColors.length];
 
