@@ -132,6 +132,7 @@ main {
   text-align: center;
   box-shadow: 0 8px 20px rgba(0,0,0,.08);
   transition: transform .18s ease, box-shadow .18s ease;
+  overflow: hidden;
 }
 
 .solidBubble { background-image: none !important; }
@@ -143,28 +144,31 @@ main {
 }
 
 .overviewCluster:hover .mainBubbleButton {
-  transform: scale(1.012);
+  transform: scale(1.008);
   box-shadow: 0 11px 25px rgba(0,0,0,.13);
 }
 
 .storyBubble strong {
   display: block;
-  max-width: 82%;
-  font-size: clamp(11px, .9vw, 16px);
+  max-width: 84%;
   line-height: 1.02;
   font-weight: 900;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  hyphens: none;
+  white-space: normal;
   text-shadow: none;
 }
 
 .bubbleMetric {
   margin-top: 7px;
   margin-bottom: 0;
-  font-size: 8px;
-  letter-spacing: .05em;
+  letter-spacing: .04em;
   text-transform: uppercase;
   opacity: .76;
   text-shadow: none;
+  white-space: nowrap;
+  max-width: 90%;
 }
 
 .decorativeOrbit { pointer-events: none; }
@@ -249,7 +253,12 @@ main {
   z-index: 4;
 }
 
-.focusMainBubble strong { font-size: clamp(20px, 2vw, 29px); }
+.focusMainBubble strong {
+  font-size: clamp(20px, 2vw, 29px);
+  overflow-wrap: normal;
+  word-break: keep-all;
+  hyphens: none;
+}
 
 .focusSubBubble {
   width: 130px;
@@ -281,6 +290,9 @@ main {
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  hyphens: none;
 }
 
 .focusSubBubble:hover {
