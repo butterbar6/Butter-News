@@ -89,7 +89,7 @@ function shortTopic(title: string) {
     .trim();
 
   const words = cleaned.split(/\s+/).filter(Boolean);
-  return words.slice(0, 4).join(" ");
+  return words.slice(0, 3).join(" ");
 }
 
 export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
@@ -99,7 +99,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   const [openItem, setOpenItem] = useState<Item | null>(null);
 
   const displayed = useMemo(
-    () => [...stories].sort((a, b) => metricValue(b, metric) - metricValue(a, metric)).slice(0, limit),
+    () => [...stories].sort((a, b) => metricValue(b, metric) - metricValue(a, metric)).slice(0, Math.min(limit, 10)),
     [stories, metric, limit]
   );
 
@@ -112,30 +112,29 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   const max = values.length ? Math.max(...values) : 1;
 
   function sizeFor(value: number) {
-    if (max === min) return 164;
+    if (max === min) return 162;
     const normalized = Math.max(0, Math.min(1, (value - min) / (max - min)));
-    return Math.round(118 + Math.sqrt(normalized) * 92);
+    return Math.round(126 + Math.sqrt(normalized) * 62);
   }
 
   function clusterPosition(index: number, count: number) {
     if (count === 1) return { left: 50, top: 50 };
 
-    const slots = [
-      { left: 50, top: 48 },
-      { left: 28, top: 24 },
-      { left: 50, top: 20 },
-      { left: 72, top: 24 },
-      { left: 18, top: 50 },
-      { left: 82, top: 50 },
-      { left: 27, top: 76 },
-      { left: 46, top: 78 },
-      { left: 64, top: 78 },
-      { left: 80, top: 74 },
-    ];
+    if (count <= 5) {
+      const spacing = 80 / Math.max(count - 1, 1);
+      return { left: 10 + index * spacing, top: 50 };
+    }
 
-    return slots[index] ?? {
-      left: 50 + Math.cos((index / count) * Math.PI * 2) * 30,
-      top: 50 + Math.sin((index / count) * Math.PI * 2) * 28,
+    const firstRow = Math.ceil(count / 2);
+    const secondRow = count - firstRow;
+    const isFirstRow = index < firstRow;
+    const rowIndex = isFirstRow ? index : index - firstRow;
+    const rowCount = isFirstRow ? firstRow : secondRow;
+    const left = rowCount === 1 ? 50 : 9 + rowIndex * (82 / Math.max(rowCount - 1, 1));
+
+    return {
+      left,
+      top: isFirstRow ? 28 : 72,
     };
   }
 
@@ -215,7 +214,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
                 <div className="decorativeOrbit" aria-hidden="true">
                   {items.map((item, itemIndex) => {
                     const angle = -Math.PI / 2 + (itemIndex / Math.max(items.length, 1)) * Math.PI * 2;
-                    const orbit = size / 2 + 26;
+                    const orbit = size / 2 + 22;
                     const left = size / 2 + Math.cos(angle) * orbit;
                     const top = size / 2 + Math.sin(angle) * orbit;
                     return (
