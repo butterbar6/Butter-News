@@ -112,79 +112,109 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
   const height = 635;
   const centerX = width / 2;
   const centerY = height / 2;
-  const edgeGap = 4;
-  const bubbleGap = 3;
+  const edgeGap = 8;
+  const bubbleGap = 4;
 
   if (stories.length === 0) return { positions: [], sizes: [] };
-  if (stories.length === 1) return { positions: [{ left: 50, top: 50 }], sizes: [Math.min(560, baseSizes[0] * 2.8)] };
+  if (stories.length === 1) {
+    return { positions: [{ left: 50, top: 50 }], sizes: [Math.min(520, baseSizes[0] * 2.45)] };
+  }
 
   const outerIndices = Array.from({ length: stories.length - 1 }, (_, i) => i + 1);
   const seed = hashString(`${metric}:${stories.map((story) => story.id).join("|")}`);
   const random = seededRandom(seed);
 
+  // Stable organic order, but keep angular spacing even so the pack remains predictable.
   for (let i = outerIndices.length - 1; i > 0; i -= 1) {
     const j = Math.floor(random() * (i + 1));
     [outerIndices[i], outerIndices[j]] = [outerIndices[j], outerIndices[i]];
   }
 
+  const rotation = random() * Math.PI * 2;
+  const angles = outerIndices.map((_, slot) => rotation + (slot / outerIndices.length) * Math.PI * 2);
+
   function buildAtScale(scale: number) {
     const sizes = baseSizes.map((size) => size * scale);
-    const mainRadii = sizes.map((size) => size / 2);
-    const centerRadius = mainRadii[0];
-    const positionsPx: Array<{ x: number; y: number }> = stories.map(() => ({ x: centerX, y: centerY }));
+    const radii = sizes.map((size) => size / 2);
+    const centerRadius = radii[0];
 
-    // Place every surrounding MAIN bubble tangent to the center MAIN bubble.
-    // We search angular positions rather than reserving a large cluster radius, which removes the visual gap.
-    const used: Array<{ index: number; x: number; y: number; r: number }> = [
-      { index: 0, x: centerX, y: centerY, r: centerRadius },
-    ];
+    // Start every outer bubble tangent to the center bubble.
+    const distances = outerIndices.map((storyIndex) => centerRadius + radii[storyIndex] + bubbleGap);
 
-    const startAngle = random() * Math.PI * 2;
+    // Only push bubbles outward when two surrounding bubbles physically collide.
+    // This minimizes the visible empty space around the center.
+    for (let iteration = 0; iteration < 180; iteration += 1) {
+      let changed = false;
 
-    for (let slot = 0; slot < outerIndices.length; slot += 1) {
-      const storyIndex = outerIndices[slot];
-      const radius = mainRadii[storyIndex];
-      const distanceFromCenter = centerRadius + radius + bubbleGap;
-      let chosen: { x: number; y: number } | null = null;
+      for (let a = 0; a < outerIndices.length; a += 1) {
+        for (let b = a + 1; b < outerIndices.length; b += 1) {
+          const indexA = outerIndices[a];
+          const indexB = outerIndices[b];
+          const ax = Math.cos(angles[a]) * distances[a];
+          const ay = Math.sin(angles[a]) * distances[a];
+          const bx = Math.cos(angles[b]) * distances[b];
+          const by = Math.sin(angles[b]) * distances[b];
+          const actual = Math.hypot(ax - bx, ay - by);
+          const required = radii[indexA] + radii[indexB] + bubbleGap;
 
-      // Dense angular scan; prefer evenly distributed candidate angles but only accept zero-overlap positions.
-      for (let step = 0; step < 1440; step += 1) {
-        const target = startAngle + ((slot / outerIndices.length) * Math.PI * 2);
-        const offsetStep = Math.ceil(step / 2) * (Math.PI / 720);
-        const direction = step % 2 === 0 ? 1 : -1;
-        const angle = target + direction * offsetStep;
-        const x = centerX + Math.cos(angle) * distanceFromCenter;
-        const y = centerY + Math.sin(angle) * distanceFromCenter;
-
-        if (x - radius < edgeGap || x + radius > width - edgeGap || y - radius < edgeGap || y + radius > height - edgeGap) continue;
-
-        let overlaps = false;
-        for (const existing of used) {
-          const required = radius + existing.r + bubbleGap;
-          if (Math.hypot(x - existing.x, y - existing.y) < required) {
-            overlaps = true;
-            break;
+          if (actual < required - 0.05) {
+            const push = (required - actual) * 0.58 + 0.2;
+            distances[a] += push;
+            distances[b] += push;
+            changed = true;
           }
-        }
-        if (!overlaps) {
-          chosen = { x, y };
-          break;
         }
       }
 
-      if (!chosen) return { sizes, positionsPx, fits: false };
-      positionsPx[storyIndex] = chosen;
-      used.push({ index: storyIndex, x: chosen.x, y: chosen.y, r: radius });
+      if (!changed) break;
     }
 
-    return { sizes, positionsPx, fits: true };
+    const positionsPx: Array<{ x: number; y: number }> = stories.map(() => ({ x: centerX, y: centerY }));
+    outerIndices.forEach((storyIndex, slot) => {
+      positionsPx[storyIndex] = {
+        x: centerX + Math.cos(angles[slot]) * distances[slot],
+        y: centerY + Math.sin(angles[slot]) * distances[slot],
+      };
+    });
+
+    // Strict no-overlap validation for all main bubbles.
+    let fits = true;
+    for (let a = 0; a < positionsPx.length && fits; a += 1) {
+      const pa = positionsPx[a];
+      const ra = radii[a];
+      if (
+        pa.x - ra < edgeGap || pa.x + ra > width - edgeGap ||
+        pa.y - ra < edgeGap || pa.y + ra > height - edgeGap
+      ) {
+        fits = false;
+        break;
+      }
+
+      for (let b = a + 1; b < positionsPx.length; b += 1) {
+        const pb = positionsPx[b];
+        const required = ra + radii[b] + bubbleGap;
+        if (Math.hypot(pa.x - pb.x, pa.y - pb.y) < required - 0.05) {
+          fits = false;
+          break;
+        }
+      }
+    }
+
+    return { sizes, positionsPx, fits };
   }
 
-  // Maximize the common scale while preserving area ratios and strict MAIN-bubble non-overlap.
-  let low = 0.05;
-  let high = 5;
-  let best = buildAtScale(low);
-  for (let iteration = 0; iteration < 38; iteration += 1) {
+  // First establish a definitely valid layout, then expand until the viewport is fully used.
+  let low = 0.2;
+  let lowCandidate = buildAtScale(low);
+  while (!lowCandidate.fits && low > 0.03) {
+    low *= 0.75;
+    lowCandidate = buildAtScale(low);
+  }
+
+  let best = lowCandidate;
+  let high = 4;
+
+  for (let iteration = 0; iteration < 36; iteration += 1) {
     const mid = (low + high) / 2;
     const candidate = buildAtScale(mid);
     if (candidate.fits) {
