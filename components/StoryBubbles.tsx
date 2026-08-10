@@ -30,14 +30,8 @@ export type BubbleStory = {
 type MetricKey = "exposure_score" | "momentum" | "article_count" | "source_count" | "importance_score";
 type PackedPosition = { left: number; top: number };
 type RadialLayout = { positions: PackedPosition[]; sizes: number[] };
-
 type FocusPlacement = { x: number; y: number; ring: number };
-type FocusLayout = {
-  placements: FocusPlacement[];
-  ringRadii: number[];
-  bubbleSize: number;
-  centerSize: number;
-};
+type FocusLayout = { placements: FocusPlacement[]; ringRadii: number[]; bubbleSize: number; centerSize: number };
 
 const metricLabels: Record<MetricKey, string> = {
   exposure_score: "Exposure",
@@ -164,24 +158,17 @@ function seededRandom(seed: number) {
   };
 }
 
-function makeRadialLayout(
-  stories: BubbleStory[],
-  baseSizes: number[],
-  metric: MetricKey,
-  width: number,
-  height: number
-): RadialLayout {
-  const safeWidth = Math.max(700, width - 18);
-  const safeHeight = Math.max(420, height - 18);
+function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: MetricKey, width: number, height: number): RadialLayout {
+  const safeWidth = Math.max(700, width - 28);
+  const safeHeight = Math.max(420, height - 28);
   const centerX = safeWidth / 2;
   const centerY = safeHeight / 2;
-  const edgeGap = 8;
-  const bubbleGap = 4;
-  const satelliteReserve = 82;
+  const edgeGap = 18;
+  const bubbleGap = 5;
 
   if (stories.length === 0) return { positions: [], sizes: [] };
   if (stories.length === 1) {
-    const size = Math.min(safeWidth * 0.44, safeHeight * 0.66, 520);
+    const size = Math.min(safeWidth * 0.44, safeHeight * 0.72, 550);
     return { positions: [{ left: 50, top: 50 }], sizes: [size] };
   }
 
@@ -198,11 +185,10 @@ function makeRadialLayout(
   function buildAtScale(scale: number) {
     const sizes = baseSizes.map((size) => size * scale);
     const radii = sizes.map((size) => size / 2);
-    const clusterRadii = radii.map((radius) => radius + satelliteReserve);
-    const centerRadius = clusterRadii[0];
-    const distances = outerIndices.map((storyIndex) => centerRadius + clusterRadii[storyIndex] + bubbleGap);
+    const centerRadius = radii[0];
+    const distances = outerIndices.map((storyIndex) => centerRadius + radii[storyIndex] + bubbleGap);
 
-    for (let iteration = 0; iteration < 360; iteration += 1) {
+    for (let iteration = 0; iteration < 300; iteration += 1) {
       let changed = false;
       for (let a = 0; a < outerIndices.length; a += 1) {
         for (let b = a + 1; b < outerIndices.length; b += 1) {
@@ -213,7 +199,7 @@ function makeRadialLayout(
           const bx = Math.cos(angles[b]) * distances[b];
           const by = Math.sin(angles[b]) * distances[b];
           const actual = Math.hypot(ax - bx, ay - by);
-          const required = clusterRadii[indexA] + clusterRadii[indexB] + bubbleGap;
+          const required = radii[indexA] + radii[indexB] + bubbleGap;
           if (actual < required - 0.05) {
             const push = (required - actual) * 0.58 + 0.15;
             distances[a] += push;
@@ -236,14 +222,14 @@ function makeRadialLayout(
     let fits = true;
     for (let a = 0; a < positionsPx.length && fits; a += 1) {
       const pa = positionsPx[a];
-      const ra = clusterRadii[a];
+      const ra = radii[a];
       if (pa.x - ra < edgeGap || pa.x + ra > safeWidth - edgeGap || pa.y - ra < edgeGap || pa.y + ra > safeHeight - edgeGap) {
         fits = false;
         break;
       }
       for (let b = a + 1; b < positionsPx.length; b += 1) {
         const pb = positionsPx[b];
-        if (Math.hypot(pa.x - pb.x, pa.y - pb.y) < ra + clusterRadii[b] + bubbleGap - 0.05) {
+        if (Math.hypot(pa.x - pb.x, pa.y - pb.y) < ra + radii[b] + bubbleGap - 0.05) {
           fits = false;
           break;
         }
@@ -252,10 +238,10 @@ function makeRadialLayout(
     return { sizes, positionsPx, fits };
   }
 
-  let low = 0.08;
+  let low = 0.12;
   let best = buildAtScale(low);
   let high = 7;
-  for (let iteration = 0; iteration < 48; iteration += 1) {
+  for (let iteration = 0; iteration < 46; iteration += 1) {
     const mid = (low + high) / 2;
     const candidate = buildAtScale(mid);
     if (candidate.fits) {
@@ -268,10 +254,7 @@ function makeRadialLayout(
 
   return {
     sizes: best.sizes.map((size) => Math.round(size)),
-    positions: best.positionsPx.map((position) => ({
-      left: (position.x / safeWidth) * 100,
-      top: (position.y / safeHeight) * 100,
-    })),
+    positions: best.positionsPx.map((position) => ({ left: (position.x / safeWidth) * 100, top: (position.y / safeHeight) * 100 })),
   };
 }
 
@@ -279,7 +262,6 @@ function makeFocusLayout(total: number, availableWidth: number, availableHeight:
   const count = Math.max(1, Math.min(total, 100));
   const minDimension = Math.max(360, Math.min(availableWidth, availableHeight));
   const maxRadius = Math.max(135, minDimension / 2 - 44);
-
   const ringCaps = [10, 16, 22, 26, 26];
   let ringCount = 1;
   let capacity = ringCaps[0];
@@ -289,19 +271,11 @@ function makeFocusLayout(total: number, availableWidth: number, availableHeight:
   }
 
   const bubbleSize = Math.max(34, Math.min(126,
-    ringCount === 1 ? 126 :
-    ringCount === 2 ? 94 :
-    ringCount === 3 ? 68 :
-    ringCount === 4 ? 52 : 40
+    ringCount === 1 ? 126 : ringCount === 2 ? 94 : ringCount === 3 ? 68 : ringCount === 4 ? 52 : 40
   ));
-
   const centerSize = Math.max(145,
-    ringCount === 1 ? 320 :
-    ringCount === 2 ? 270 :
-    ringCount === 3 ? 225 :
-    ringCount === 4 ? 185 : 150
+    ringCount === 1 ? 320 : ringCount === 2 ? 270 : ringCount === 3 ? 225 : ringCount === 4 ? 185 : 150
   );
-
   const firstRadius = Math.min(maxRadius, centerSize / 2 + bubbleSize / 2 + 14);
   const ringRadii = Array.from({ length: ringCount }, (_, ringIndex) => {
     if (ringCount === 1) return Math.min(maxRadius, Math.max(firstRadius, maxRadius * 0.72));
@@ -315,15 +289,10 @@ function makeFocusLayout(total: number, availableWidth: number, availableHeight:
     const rotation = -Math.PI / 2 + (ring % 2) * (Math.PI / Math.max(ringItems, 1));
     for (let slot = 0; slot < ringItems; slot += 1) {
       const angle = rotation + (slot / Math.max(ringItems, 1)) * Math.PI * 2;
-      placements.push({
-        x: Math.cos(angle) * ringRadii[ring],
-        y: Math.sin(angle) * ringRadii[ring],
-        ring,
-      });
+      placements.push({ x: Math.cos(angle) * ringRadii[ring], y: Math.sin(angle) * ringRadii[ring], ring });
       itemIndex += 1;
     }
   }
-
   return { placements, ringRadii, bubbleSize, centerSize };
 }
 
@@ -336,10 +305,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   const [viewport, setViewport] = useState({ width: 1480, height: 640 });
 
   useEffect(() => {
-    const measure = () => setViewport({
-      width: window.innerWidth,
-      height: Math.max(430, window.innerHeight - 112),
-    });
+    const measure = () => setViewport({ width: window.innerWidth, height: Math.max(430, window.innerHeight - 112) });
     measure();
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
@@ -349,10 +315,8 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
     () => [...stories].sort((a, b) => metricValue(b, metric) - metricValue(a, metric)).slice(0, Math.min(limit, 10)),
     [stories, metric, limit]
   );
-
   const selectedStory = selectedStoryId ? stories.find((story) => story.id === selectedStoryId) ?? null : null;
   const maxValue = Math.max(...displayed.map((story) => metricValue(story, metric)), 1);
-
   const baseSizes = displayed.map((story) => 210 * Math.sqrt(Math.max(metricValue(story, metric), 1) / maxValue));
   const layout = useMemo(
     () => makeRadialLayout(displayed, baseSizes, metric, viewport.width, viewport.height),
@@ -380,19 +344,14 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   const visibleFocusCount = Math.min(allFocusItems.length, 10 + (focusLevel - 1) * 10);
   const focusItems = allFocusItems.slice(0, visibleFocusCount);
   const focusTitle = selectedStory ? shortTopic(selectedStory.title) : "";
-  const focusColor = selectedStory
-    ? bubbleColors[Math.max(0, stories.findIndex((s) => s.id === selectedStory.id)) % bubbleColors.length]
-    : bubbleColors[0];
+  const focusColor = selectedStory ? bubbleColors[Math.max(0, stories.findIndex((s) => s.id === selectedStory.id)) % bubbleColors.length] : bubbleColors[0];
   const focusLayout = makeFocusLayout(focusItems.length, viewport.width * 0.96, viewport.height);
 
   return (
     <div className="visualizerShell">
       <header className="brandBanner">
         <div className="bannerSilhouette bannerSilhouetteLeft" aria-hidden="true" />
-        <div className="brandCopy">
-          <h1>BUTTER NEWS</h1>
-          <p>Sacramento - San Jose - San Francisco</p>
-        </div>
+        <div className="brandCopy"><h1>BUTTER NEWS</h1><p>Sacramento - San Jose - San Francisco</p></div>
         <div className="bannerSilhouette bannerSilhouetteRight" aria-hidden="true" />
       </header>
       {controls}
@@ -414,13 +373,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
 
               return (
                 <div key={story.id} className="storyCluster overviewCluster" style={{ left: `${position.left}%`, top: `${position.top}%`, width: size, height: size }}>
-                  <button
-                    type="button"
-                    className="storyBubble mainBubbleButton solidBubble"
-                    onClick={() => { setSelectedStoryId(story.id); setFocusLevel(1); }}
-                    aria-label={`Open story: ${story.title}`}
-                    style={{ width: size, height: size, backgroundColor: bubbleColor, padding: Math.max(8, size * 0.085) }}
-                  >
+                  <button type="button" className="storyBubble mainBubbleButton solidBubble" onClick={() => { setSelectedStoryId(story.id); setFocusLevel(1); }} aria-label={`Open story: ${story.title}`} style={{ width: size, height: size, backgroundColor: bubbleColor, padding: Math.max(8, size * 0.085) }}>
                     <strong style={{ fontSize: topicFont }}>{topicForSize(story.title, size)}</strong>
                     <span className="bubbleMetric" style={{ fontSize: metricFont }}>{metricLabels[metric]} {value}</span>
                   </button>
@@ -430,20 +383,13 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
                       const count = Math.max(items.length, 1);
                       const angle = storyIndex === 0
                         ? -Math.PI / 2 + (itemIndex / count) * Math.PI * 2
-                        : outwardAngle - Math.PI / 2 + ((itemIndex + 0.5) / count) * Math.PI;
-                      const orbit = size / 2 + 42;
+                        : outwardAngle - 0.72 + (itemIndex / Math.max(count - 1, 1)) * 1.44;
+                      const orbit = size / 2 + 26;
                       const left = size / 2 + Math.cos(angle) * orbit;
                       const top = size / 2 + Math.sin(angle) * orbit;
                       const itemImage = item.image_url ?? fallbackImage(item.id);
                       return (
-                        <button
-                          key={item.id}
-                          type="button"
-                          className={`subBubble subBubbleDecorative ${styles.overviewSatellite} ${styles.clickableOverviewSatellite}`}
-                          style={{ left, top, backgroundImage: `url(${itemImage})` }}
-                          onClick={(event) => { event.stopPropagation(); setOpenItem(item); }}
-                          aria-label={`Read article: ${item.title}`}
-                        >
+                        <button key={item.id} type="button" className={`subBubble subBubbleDecorative ${styles.overviewSatellite} ${styles.clickableOverviewSatellite}`} style={{ left, top, backgroundImage: `url(${itemImage})` }} onClick={(event) => { event.stopPropagation(); setOpenItem(item); }} aria-label={`Read article: ${item.title}`}>
                           <span className={styles.satelliteLabel}>{item.title}</span>
                         </button>
                       );
@@ -457,24 +403,12 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
       ) : (
         <section className="bubbleStage focusView" aria-label="Selected topic with related articles">
           <button className="backButton" onClick={() => { setSelectedStoryId(null); setOpenItem(null); setFocusLevel(1); }}>← All stories</button>
-
           <div className="focusScene" style={{ width: "96vw", height: "calc(100svh - 120px)", minHeight: 0 }}>
-            {focusLayout.ringRadii.map((radius, ringIndex) => (
-              <div key={ringIndex} className="focusOrbitRing" style={{ width: radius * 2, height: radius * 2 }} />
-            ))}
-
-            <button
-              type="button"
-              className="storyBubble focusMainBubble solidBubble"
-              style={{ backgroundColor: focusColor, width: focusLayout.centerSize, height: focusLayout.centerSize }}
-              onClick={() => setFocusLevel((level) => Math.min(level + 1, 10))}
-              aria-label="Show more related articles"
-            >
+            {focusLayout.ringRadii.map((radius, ringIndex) => <div key={ringIndex} className="focusOrbitRing" style={{ width: radius * 2, height: radius * 2 }} />)}
+            <button type="button" className="storyBubble focusMainBubble solidBubble" style={{ backgroundColor: focusColor, width: focusLayout.centerSize, height: focusLayout.centerSize }} onClick={() => setFocusLevel((level) => Math.min(level + 1, 10))} aria-label="Show more related articles">
               <strong>{focusTitle}</strong>
               <span className="bubbleMetric">{metricLabels[metric]} {metricValue(selectedStory, metric)}</span>
-              <span className={styles.moreHint}>
-                {visibleFocusCount < allFocusItems.length ? `Click for more · ${visibleFocusCount}/${allFocusItems.length}` : `${allFocusItems.length} articles shown`}
-              </span>
+              <span className={styles.moreHint}>{visibleFocusCount < allFocusItems.length ? `Click for more · ${visibleFocusCount}/${allFocusItems.length}` : `${allFocusItems.length} articles shown`}</span>
             </button>
 
             {focusItems.map((item, index) => {
@@ -484,30 +418,9 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
               const titleWidth = Math.max(72, Math.min(132, focusLayout.bubbleSize * 1.65));
               const titleFont = focusLayout.bubbleSize < 50 ? 6.5 : focusLayout.bubbleSize < 70 ? 7.5 : 9;
               return (
-                <button
-                  key={item.id}
-                  type="button"
-                  className="subBubble focusSubBubble"
-                  onClick={() => setOpenItem(item)}
-                  style={{
-                    width: focusLayout.bubbleSize,
-                    height: focusLayout.bubbleSize,
-                    marginLeft: -focusLayout.bubbleSize / 2,
-                    marginTop: -focusLayout.bubbleSize / 2,
-                    left: `calc(50% + ${placement.x}px)`,
-                    top: `calc(50% + ${placement.y}px)`,
-                    padding: 3,
-                    backgroundImage: `linear-gradient(rgba(0,0,0,.24), rgba(0,0,0,.56)), url(${itemImage})`,
-                  }}
-                  aria-label={`Read article ${index + 1}: ${item.title}`}
-                >
+                <button key={item.id} type="button" className="subBubble focusSubBubble" onClick={() => setOpenItem(item)} style={{ width: focusLayout.bubbleSize, height: focusLayout.bubbleSize, marginLeft: -focusLayout.bubbleSize / 2, marginTop: -focusLayout.bubbleSize / 2, left: `calc(50% + ${placement.x}px)`, top: `calc(50% + ${placement.y}px)`, padding: 3, backgroundImage: `linear-gradient(rgba(0,0,0,.24), rgba(0,0,0,.56)), url(${itemImage})` }} aria-label={`Read article ${index + 1}: ${item.title}`}>
                   <span className={styles.focusArticleNumber}>{index + 1}</span>
-                  <span
-                    className={styles.focusArticleTitle}
-                    style={{ width: titleWidth, fontSize: titleFont }}
-                  >
-                    {item.title}
-                  </span>
+                  <span className={styles.focusArticleTitle} style={{ width: titleWidth, fontSize: titleFont }}>{item.title}</span>
                 </button>
               );
             })}
@@ -523,11 +436,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
             <div className="articleModalBody">
               <p className="articleMeta">{sourceName(openItem.sources)}{openItem.author ? ` · ${openItem.author}` : ""}{openItem.published_at ? ` · ${new Date(openItem.published_at).toLocaleString()}` : ""}</p>
               <h2>{openItem.title}</h2>
-              <div className="articleText">
-                {openItem.content
-                  ? openItem.content.split("\n").filter(Boolean).map((paragraph, index) => <p key={index}>{paragraph}</p>)
-                  : <p>This test article does not yet contain a full article body. When real article content is ingested into Supabase, it will appear here without redirecting away from Butter News.</p>}
-              </div>
+              <div className="articleText">{openItem.content ? openItem.content.split("\n").filter(Boolean).map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p>This test article does not yet contain a full article body. When real article content is ingested into Supabase, it will appear here without redirecting away from Butter News.</p>}</div>
             </div>
           </article>
         </div>
