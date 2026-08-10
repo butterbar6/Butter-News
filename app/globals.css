@@ -45,10 +45,7 @@ main {
   z-index: 5;
 }
 
-.brandCopy {
-  position: relative;
-  z-index: 2;
-}
+.brandCopy { position: relative; z-index: 2; }
 
 .brandBanner h1 {
   margin: 0;
@@ -121,54 +118,13 @@ main {
   box-shadow: 0 5px 18px rgba(0,0,0,.12);
   backdrop-filter: blur(6px);
 }
+.controlBar label { display: grid; gap: 1px; min-width: 122px; padding: 4px 8px; border: 1px solid #111; border-radius: 999px; background: #fff; }
+.controlBar span { font-size: 7px; line-height: 1; text-transform: uppercase; letter-spacing: .08em; opacity: .55; }
+.controlBar select { color: #111; border: 0; outline: 0; background: transparent; font-size: 11px; line-height: 1.05; font-weight: 800; cursor: pointer; }
 
-.controlBar label {
-  display: grid;
-  gap: 1px;
-  min-width: 122px;
-  padding: 4px 8px;
-  border: 1px solid #111;
-  border-radius: 999px;
-  background: #fff;
-}
-
-.controlBar span {
-  font-size: 7px;
-  line-height: 1;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  opacity: .55;
-}
-
-.controlBar select {
-  color: #111;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  font-size: 11px;
-  line-height: 1.05;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.bubbleStage {
-  position: relative;
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow: hidden;
-}
-
-.circularStage {
-  height: auto;
-  min-height: 0;
-  max-height: none;
-  padding: 8px 18px 12px;
-}
-
-.storyCluster {
-  position: absolute;
-  transform: translate(-50%, -50%);
-}
+.bubbleStage { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; transition: margin-left .22s ease, width .22s ease; }
+.circularStage { height: auto; min-height: 0; max-height: none; padding: 8px 18px 12px; }
+.storyCluster { position: absolute; transform: translate(-50%, -50%); }
 
 .storyBubble {
   border-radius: 50%;
@@ -184,253 +140,65 @@ main {
   transition: transform .18s ease, box-shadow .18s ease;
   overflow: hidden;
 }
-
 .solidBubble { background-image: none !important; }
-
-.mainBubbleButton {
-  position: absolute;
-  inset: 0;
-  cursor: pointer;
-}
-
-.overviewCluster:hover .mainBubbleButton {
-  transform: scale(1.008);
-  box-shadow: 0 11px 25px rgba(0,0,0,.13);
-}
-
-.storyBubble strong {
-  display: block;
-  max-width: 84%;
-  line-height: 1.02;
-  font-weight: 900;
-  overflow-wrap: normal;
-  word-break: keep-all;
-  hyphens: none;
-  white-space: normal;
-  text-shadow: none;
-}
-
-.bubbleMetric {
-  margin-top: 7px;
-  margin-bottom: 0;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  opacity: .76;
-  text-shadow: none;
-  white-space: nowrap;
-  max-width: 90%;
-}
-
+.mainBubbleButton { position: absolute; inset: 0; cursor: pointer; }
+.overviewCluster:hover .mainBubbleButton { transform: scale(1.008); box-shadow: 0 11px 25px rgba(0,0,0,.13); }
+.storyBubble strong { display: block; max-width: 84%; line-height: 1.02; font-weight: 900; overflow-wrap: normal; word-break: keep-all; hyphens: none; white-space: normal; text-shadow: none; }
+.bubbleMetric { margin-top: 7px; margin-bottom: 0; letter-spacing: .04em; text-transform: uppercase; opacity: .76; text-shadow: none; white-space: nowrap; max-width: 90%; }
 .decorativeOrbit { pointer-events: none; }
 
-.subBubble {
-  position: absolute;
-  border-radius: 50%;
-  border: 1.75px solid #111;
-  padding: 0;
-  box-shadow: 0 3px 8px rgba(0,0,0,.09);
-}
+.subBubble { position: absolute; border-radius: 50%; border: 1.75px solid #111; padding: 0; box-shadow: 0 3px 8px rgba(0,0,0,.09); }
+.subBubbleDecorative { width: 30px; height: 30px; margin-left: -15px; margin-top: -15px; opacity: 1; transform: none !important; transition: none !important; filter: none !important; background-size: cover; background-position: center; background-repeat: no-repeat; }
+.overviewView .subBubbleDecorative:hover { transform: none !important; box-shadow: 0 3px 8px rgba(0,0,0,.09) !important; filter: none !important; }
 
-.subBubbleDecorative {
-  width: 30px;
-  height: 30px;
-  margin-left: -15px;
-  margin-top: -15px;
-  opacity: 1;
-  transform: none !important;
-  transition: none !important;
-  filter: none !important;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
+.focusView { min-height: 0; display: grid; place-items: center; animation: zoomInView .35s ease both; }
+@keyframes zoomInView { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
+.backButton { position: absolute; top: 10px; left: 12px; z-index: 20; border: 1.5px solid #111; background: #fff; color: #111; border-radius: 999px; padding: 9px 14px; cursor: pointer; font-weight: 800; }
+.focusScene { position: relative; width: min(920px, 92vw); height: min(690px, calc(100svh - 190px)); min-height: 600px; }
+.focusOrbitRing { position: absolute; left: 50%; top: 50%; width: 570px; height: 570px; transform: translate(-50%, -50%); border: 1.5px dashed rgba(0,0,0,.35); border-radius: 50%; pointer-events: none; }
+.focusMainBubble { position: absolute; left: 50%; top: 50%; width: 330px; height: 330px; transform: translate(-50%, -50%); z-index: 4; }
+.focusMainBubble strong { font-size: clamp(20px, 2vw, 29px); overflow-wrap: normal; word-break: keep-all; hyphens: none; }
+.focusSubBubble { width: 130px; height: 130px; margin-left: -65px; margin-top: -65px; cursor: pointer; color: #fff; display: grid; place-items: center; padding: 12px; text-align: center; z-index: 6; border: 2px solid #111; background-size: cover; background-position: center; transition: transform .18s ease, box-shadow .18s ease, filter .18s ease; }
+.focusSubBubble span { font-size: 11px; line-height: 1.15; font-weight: 800; text-transform: none; letter-spacing: 0; opacity: 1; text-shadow: 0 2px 10px rgba(0,0,0,.72); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: normal; word-break: keep-all; hyphens: none; }
+.focusSubBubble:hover { transform: scale(1.06); box-shadow: 0 10px 24px rgba(0,0,0,.2); }
 
-.overviewView .subBubbleDecorative:hover {
-  transform: none !important;
-  box-shadow: 0 3px 8px rgba(0,0,0,.09) !important;
-  filter: none !important;
-}
-
-.focusView {
-  min-height: 0;
-  display: grid;
-  place-items: center;
-  animation: zoomInView .35s ease both;
-}
-
-@keyframes zoomInView {
-  from { opacity: 0; transform: scale(.94); }
-  to { opacity: 1; transform: scale(1); }
-}
-
-.backButton {
-  position: absolute;
-  top: 10px;
-  left: 12px;
-  z-index: 20;
-  border: 1.5px solid #111;
-  background: #fff;
-  color: #111;
-  border-radius: 999px;
-  padding: 9px 14px;
-  cursor: pointer;
-  font-weight: 800;
-}
-
-.focusScene {
-  position: relative;
-  width: min(920px, 92vw);
-  height: min(690px, calc(100svh - 190px));
-  min-height: 600px;
-}
-
-.focusOrbitRing {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 570px;
-  height: 570px;
-  transform: translate(-50%, -50%);
-  border: 1.5px dashed rgba(0,0,0,.35);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.focusMainBubble {
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  width: 330px;
-  height: 330px;
-  transform: translate(-50%, -50%);
-  z-index: 4;
-}
-
-.focusMainBubble strong {
-  font-size: clamp(20px, 2vw, 29px);
-  overflow-wrap: normal;
-  word-break: keep-all;
-  hyphens: none;
-}
-
-.focusSubBubble {
-  width: 130px;
-  height: 130px;
-  margin-left: -65px;
-  margin-top: -65px;
-  cursor: pointer;
-  color: #fff;
-  display: grid;
-  place-items: center;
-  padding: 12px;
-  text-align: center;
-  z-index: 6;
-  border: 2px solid #111;
-  background-size: cover;
-  background-position: center;
-  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
-}
-
-.focusSubBubble span {
-  font-size: 11px;
-  line-height: 1.15;
-  font-weight: 800;
-  text-transform: none;
-  letter-spacing: 0;
-  opacity: 1;
-  text-shadow: 0 2px 10px rgba(0,0,0,.72);
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  overflow-wrap: normal;
-  word-break: keep-all;
-  hyphens: none;
-}
-
-.focusSubBubble:hover {
-  transform: scale(1.06);
-  box-shadow: 0 10px 24px rgba(0,0,0,.2);
-}
-
-.articleModalBackdrop {
+.articleModalBackdrop.articleReaderDock {
   position: fixed;
-  inset: 0;
-  z-index: 100;
-  display: grid;
-  place-items: center;
-  padding: 28px;
-  background: rgba(0,0,0,.34);
-  backdrop-filter: blur(7px);
+  left: 0;
+  top: 104px;
+  bottom: 0;
+  right: auto;
+  z-index: 50;
+  display: block;
+  padding: 8px 8px 12px;
+  background: #fff;
+  border-right: 2px solid #111;
+  backdrop-filter: none;
+  overflow: hidden;
 }
 
-.articleModal {
+.articleReaderDock .articleModal {
   position: relative;
-  width: min(860px, 94vw);
-  max-height: 88vh;
+  width: 100%;
+  height: 100%;
+  max-height: none;
   overflow: auto;
-  border: 2px solid #111;
-  border-radius: 20px;
-  background: #fff;
-  color: #111;
-  box-shadow: 0 28px 90px rgba(0,0,0,.25);
-}
-
-.modalClose {
-  position: absolute;
-  right: 16px;
-  top: 16px;
-  z-index: 3;
-  width: 40px;
-  height: 40px;
   border: 1.5px solid #111;
-  border-radius: 50%;
+  border-radius: 12px;
   background: #fff;
   color: #111;
-  font-size: 28px;
-  line-height: 1;
-  cursor: pointer;
+  box-shadow: 6px 0 20px rgba(0,0,0,.08);
 }
 
-.articleHero {
-  height: 250px;
-  background-size: cover;
-  background-position: center;
-}
-
-.articleModalBody { padding: 28px 32px 34px; }
-
-.articleMeta {
-  margin: 0 0 10px;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  opacity: .55;
-}
-
-.articleModal h2 {
-  margin: 0 0 22px;
-  font-size: clamp(28px, 4vw, 44px);
-  line-height: 1.05;
-  letter-spacing: -.03em;
-}
-
-.articleText {
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: 18px;
-  line-height: 1.72;
-  color: #222;
-}
-
+.modalClose { position: absolute; right: 12px; top: 12px; z-index: 3; width: 36px; height: 36px; border: 1.5px solid #111; border-radius: 50%; background: #fff; color: #111; font-size: 25px; line-height: 1; cursor: pointer; }
+.articleHero { height: 190px; background-size: cover; background-position: center; }
+.articleModalBody { padding: 20px 22px 28px; }
+.articleMeta { margin: 0 0 9px; font-size: 10px; text-transform: uppercase; letter-spacing: .08em; opacity: .55; }
+.articleModal h2 { margin: 0 0 18px; font-size: clamp(22px, 2.2vw, 32px); line-height: 1.06; letter-spacing: -.03em; }
+.articleText { font-family: Georgia, 'Times New Roman', serif; font-size: 16px; line-height: 1.62; color: #222; }
 .articleText p { margin: 0 0 1.15em; }
 
-.panel {
-  margin: 18px;
-  border: 1.5px solid #111;
-  border-radius: 18px;
-  background: #fff;
-}
-
+.panel { margin: 18px; border: 1.5px solid #111; border-radius: 18px; background: #fff; }
 .errorBox, .emptyBox { padding: 20px; }
 .errorBox p { margin-bottom: 0; opacity: .7; }
 
@@ -450,6 +218,7 @@ main {
   .bannerSilhouetteRight { right: 3px; }
   .storyCluster { transform: translate(-50%, -50%) scale(.7); }
   .focusScene { transform: scale(.77); }
+  .articleModalBackdrop.articleReaderDock { top: 80px; }
 }
 
 @media (max-width: 650px) {
@@ -465,9 +234,8 @@ main {
   .storyCluster { transform: translate(-50%, -50%) scale(.5); }
   .subBubbleDecorative { width: 28px; height: 28px; margin-left: -14px; margin-top: -14px; }
   .focusScene { width: 100%; height: 620px; min-height: 620px; transform: scale(.58); }
-  .articleModalBackdrop { padding: 12px; }
-  .articleModal { width: 100%; max-height: 92vh; border-radius: 16px; }
-  .articleHero { height: 185px; }
-  .articleModalBody { padding: 22px 20px 28px; }
-  .articleText { font-size: 16px; }
+  .articleModalBackdrop.articleReaderDock { top: 68px; padding: 5px; }
+  .articleHero { height: 150px; }
+  .articleModalBody { padding: 17px 16px 22px; }
+  .articleText { font-size: 15px; }
 }
