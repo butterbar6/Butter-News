@@ -2,11 +2,12 @@
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(430px, 40%) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   overflow: hidden;
 }
 
 .customTopicsPanel {
+  display: none;
   min-width: 0;
   height: 100%;
   overflow: hidden;
@@ -133,14 +134,14 @@
 }
 
 @media (max-width: 1180px) {
-  .overviewSplit { grid-template-columns: minmax(390px, 39%) minmax(0, 1fr); }
+  .overviewSplit { grid-template-columns: minmax(0, 1fr); }
   .customTopicRow { grid-template-columns: 100px minmax(0, 1fr); }
   .customTopicLabelButton { font-size: 14px; }
   .customArticleTitle { font-size: 10.5px; }
 }
 
 @media (max-width: 900px) {
-  .overviewSplit { grid-template-columns: 340px minmax(0, 1fr); }
+  .overviewSplit { grid-template-columns: minmax(0, 1fr); }
   .customTopicsPanel { padding: 9px; }
   .customTopicsHeading strong { display: none; }
   .customTopicRow { grid-template-columns: 82px minmax(0, 1fr); gap: 6px; }
