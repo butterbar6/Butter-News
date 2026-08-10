@@ -16,6 +16,11 @@ type Item = {
 };
 type StoryItem = { items: Item | Item[] | null };
 
+type CustomTopic = {
+  name: string;
+  items: Item[];
+};
+
 export type BubbleStory = {
   id: string;
   title: string;
@@ -40,6 +45,84 @@ const metricLabels: Record<MetricKey, string> = {
 const bubbleColors = [
   "#ff725e", "#5b8fe8", "#82cf77", "#a896df", "#ffad3d",
   "#62c9c5", "#ffd54f", "#ee7aa8", "#67b7d8", "#8e83d8",
+];
+
+const customTopics: CustomTopic[] = [
+  {
+    name: "Australian Rugby",
+    items: [
+      {
+        id: "custom-rugby-1",
+        title: "Wallabies reshape squad ahead of next test window",
+        url: "#",
+        content: "This is placeholder custom-topic content for the Butter News prototype. In the production version, this card will be populated from the user's selected niche topics and the same article ingestion system used elsewhere in the site.",
+        author: "Butter News Demo",
+        published_at: null,
+        image_url: "https://picsum.photos/seed/australia-rugby-1/500/300",
+        sources: { name: "Custom Feed" },
+      },
+      {
+        id: "custom-rugby-2",
+        title: "Super Rugby clubs prepare for late-season push",
+        url: "#",
+        content: "This is placeholder custom-topic content. The eventual custom-topic system will let each user choose narrow interests that may never become major global bubble stories.",
+        author: "Butter News Demo",
+        published_at: null,
+        image_url: "https://picsum.photos/seed/australia-rugby-2/500/300",
+        sources: { name: "Custom Feed" },
+      },
+    ],
+  },
+  {
+    name: "Aerospace Startups",
+    items: [
+      {
+        id: "custom-aero-1",
+        title: "Small aerospace firms compete for new funding rounds",
+        url: "#",
+        content: "This prototype article represents a user-selected niche feed. Later, these records should come from Supabase and be associated with each user's custom-topic preferences.",
+        author: "Butter News Demo",
+        published_at: null,
+        image_url: "https://picsum.photos/seed/aerospace-startup-1/500/300",
+        sources: { name: "Custom Feed" },
+      },
+      {
+        id: "custom-aero-2",
+        title: "Advanced propulsion startups expand testing programs",
+        url: "#",
+        content: "This is temporary sample data for the custom-topic rail. Clicking any card uses the same in-page reading modal as a View 2 article.",
+        author: "Butter News Demo",
+        published_at: null,
+        image_url: "https://picsum.photos/seed/aerospace-startup-2/500/300",
+        sources: { name: "Custom Feed" },
+      },
+    ],
+  },
+  {
+    name: "Sacramento Growth",
+    items: [
+      {
+        id: "custom-sac-1",
+        title: "Regional development projects move into new phases",
+        url: "#",
+        content: "This placeholder demonstrates how local or professional niche interests can remain visible even when they are not among the largest stories on the wider internet.",
+        author: "Butter News Demo",
+        published_at: null,
+        image_url: "https://picsum.photos/seed/sacramento-growth-1/500/300",
+        sources: { name: "Custom Feed" },
+      },
+      {
+        id: "custom-sac-2",
+        title: "New investment targets transportation and housing",
+        url: "#",
+        content: "This is placeholder content for a future user-configurable topic feed backed by Supabase.",
+        author: "Butter News Demo",
+        published_at: null,
+        image_url: "https://picsum.photos/seed/sacramento-growth-2/500/300",
+        sources: { name: "Custom Feed" },
+      },
+    ],
+  },
 ];
 
 function metricValue(story: BubbleStory, metric: MetricKey) {
@@ -108,7 +191,7 @@ function seededRandom(seed: number) {
 }
 
 function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: MetricKey): RadialLayout {
-  const width = 1480;
+  const width = 940;
   const height = 635;
   const centerX = width / 2;
   const centerY = height / 2;
@@ -117,7 +200,7 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
 
   if (stories.length === 0) return { positions: [], sizes: [] };
   if (stories.length === 1) {
-    return { positions: [{ left: 50, top: 50 }], sizes: [Math.min(520, baseSizes[0] * 2.45)] };
+    return { positions: [{ left: 50, top: 50 }], sizes: [Math.min(500, baseSizes[0] * 2.25)] };
   }
 
   const outerIndices = Array.from({ length: stories.length - 1 }, (_, i) => i + 1);
@@ -271,43 +354,77 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
       {controls}
 
       {!selectedStory ? (
-        <section className="bubbleStage circularStage overviewView" aria-label="Story bubble visualization">
-          {displayed.map((story, storyIndex) => {
-            const value = metricValue(story, metric);
-            const size = layout.sizes[storyIndex];
-            const position = layout.positions[storyIndex];
-            const items = flattenItems(story).slice(0, 8);
-            const bubbleColor = bubbleColors[storyIndex % bubbleColors.length];
-            const topicFont = Math.max(10, Math.min(24, size * 0.1));
-            const metricFont = Math.max(7, Math.min(12, size * 0.047));
-            const dx = (position.left - 50) * 14.8;
-            const dy = (position.top - 50) * 6.35;
-            const outwardAngle = Math.atan2(dy, dx);
+        <div className="overviewSplit">
+          <aside className="customTopicsPanel" aria-label="Custom topics">
+            <div className="customTopicsHeading">
+              <span>YOUR CUSTOM TOPICS</span>
+              <strong>Niche news you choose</strong>
+            </div>
 
-            return (
-              <div key={story.id} className="storyCluster overviewCluster" style={{ left: `${position.left}%`, top: `${position.top}%`, width: size, height: size }}>
-                <button type="button" className="storyBubble mainBubbleButton solidBubble" onClick={() => setSelectedStoryId(story.id)} aria-label={`Open story: ${story.title}`} style={{ width: size, height: size, backgroundColor: bubbleColor, padding: Math.max(8, size * 0.085) }}>
-                  <strong style={{ fontSize: topicFont }}>{topicForSize(story.title, size)}</strong>
-                  <span className="bubbleMetric" style={{ fontSize: metricFont }}>{metricLabels[metric]} {value}</span>
-                </button>
+            <div className="customTopicRows">
+              {customTopics.map((topic) => (
+                <section className="customTopicRow" key={topic.name}>
+                  <div className="customTopicLabel">{topic.name}</div>
+                  <div className="customArticleRow">
+                    {topic.items.map((item) => (
+                      <button
+                        type="button"
+                        className="customArticleCard"
+                        key={item.id}
+                        onClick={() => setOpenItem(item)}
+                        aria-label={`Read custom-topic article: ${item.title}`}
+                      >
+                        <span
+                          className="customArticleImage"
+                          style={{ backgroundImage: `url(${item.image_url ?? fallbackImage(item.id)})` }}
+                        />
+                        <span className="customArticleTitle">{item.title}</span>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+              ))}
+            </div>
+          </aside>
 
-                <div className="decorativeOrbit" aria-hidden="true">
-                  {items.map((item, itemIndex) => {
-                    const count = Math.max(items.length, 1);
-                    const angle = storyIndex === 0
-                      ? -Math.PI / 2 + (itemIndex / count) * Math.PI * 2
-                      : outwardAngle - Math.PI / 2 + ((itemIndex + 0.5) / count) * Math.PI;
-                    const orbit = size / 2 + 14;
-                    const left = size / 2 + Math.cos(angle) * orbit;
-                    const top = size / 2 + Math.sin(angle) * orbit;
-                    const itemImage = item.image_url ?? fallbackImage(item.id);
-                    return <span key={item.id} className="subBubble subBubbleDecorative" style={{ left, top, backgroundImage: `url(${itemImage})` }} />;
-                  })}
+          <section className="bubbleStage circularStage overviewView" aria-label="Story bubble visualization">
+            {displayed.map((story, storyIndex) => {
+              const value = metricValue(story, metric);
+              const size = layout.sizes[storyIndex];
+              const position = layout.positions[storyIndex];
+              const items = flattenItems(story).slice(0, 8);
+              const bubbleColor = bubbleColors[storyIndex % bubbleColors.length];
+              const topicFont = Math.max(10, Math.min(24, size * 0.1));
+              const metricFont = Math.max(7, Math.min(12, size * 0.047));
+              const dx = (position.left - 50) * 9.4;
+              const dy = (position.top - 50) * 6.35;
+              const outwardAngle = Math.atan2(dy, dx);
+
+              return (
+                <div key={story.id} className="storyCluster overviewCluster" style={{ left: `${position.left}%`, top: `${position.top}%`, width: size, height: size }}>
+                  <button type="button" className="storyBubble mainBubbleButton solidBubble" onClick={() => setSelectedStoryId(story.id)} aria-label={`Open story: ${story.title}`} style={{ width: size, height: size, backgroundColor: bubbleColor, padding: Math.max(8, size * 0.085) }}>
+                    <strong style={{ fontSize: topicFont }}>{topicForSize(story.title, size)}</strong>
+                    <span className="bubbleMetric" style={{ fontSize: metricFont }}>{metricLabels[metric]} {value}</span>
+                  </button>
+
+                  <div className="decorativeOrbit" aria-hidden="true">
+                    {items.map((item, itemIndex) => {
+                      const count = Math.max(items.length, 1);
+                      const angle = storyIndex === 0
+                        ? -Math.PI / 2 + (itemIndex / count) * Math.PI * 2
+                        : outwardAngle - Math.PI / 2 + ((itemIndex + 0.5) / count) * Math.PI;
+                      const orbit = size / 2 + 30;
+                      const left = size / 2 + Math.cos(angle) * orbit;
+                      const top = size / 2 + Math.sin(angle) * orbit;
+                      const itemImage = item.image_url ?? fallbackImage(item.id);
+                      return <span key={item.id} className="subBubble subBubbleDecorative" style={{ left, top, backgroundImage: `url(${itemImage})` }} />;
+                    })}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </section>
+              );
+            })}
+          </section>
+        </div>
       ) : (
         <section className="bubbleStage focusView" aria-label="Selected story with related articles">
           <button className="backButton" onClick={() => { setSelectedStoryId(null); setOpenItem(null); }}>← All stories</button>
