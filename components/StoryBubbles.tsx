@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styles from "./StoryBubbles.module.css";
 
 type Metric = { metric_type: string; metric_value: number };
@@ -16,6 +16,7 @@ type Item = {
   sources: Source;
 };
 type StoryItem = { items: Item | Item[] | null };
+
 type CustomTopic = { name: string; items: Item[] };
 
 export type BubbleStory = {
@@ -44,6 +45,7 @@ const bubbleColors = [
   "#62c9c5", "#ffd54f", "#ee7aa8", "#67b7d8", "#8e83d8",
 ];
 
+// Preserved prototype data for the saved "custom sidebar" feature.
 function customItem(id: string, title: string, seed: string, content: string): Item {
   return {
     id,
@@ -86,6 +88,7 @@ const customTopics: CustomTopic[] = [
     ],
   },
 ];
+void customTopics;
 
 function metricValue(story: BubbleStory, metric: MetricKey) {
   if (metric === "importance_score") return Number(story.importance_score ?? 0);
@@ -152,16 +155,25 @@ function seededRandom(seed: number) {
   };
 }
 
-function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: MetricKey): RadialLayout {
-  const width = 940;
-  const height = 635;
-  const centerX = width / 2;
-  const centerY = height / 2;
-  const edgeGap = 8;
-  const bubbleGap = 4;
+function makeRadialLayout(
+  stories: BubbleStory[],
+  baseSizes: number[],
+  metric: MetricKey,
+  width: number,
+  height: number
+): RadialLayout {
+  const safeWidth = Math.max(700, width);
+  const safeHeight = Math.max(420, height);
+  const centerX = safeWidth / 2;
+  const centerY = safeHeight / 2;
+  const edgeGap = 16;
+  const bubbleGap = 5;
 
   if (stories.length === 0) return { positions: [], sizes: [] };
-  if (stories.length === 1) return { positions: [{ left: 50, top: 50 }], sizes: [Math.min(500, baseSizes[0] * 2.25)] };
+  if (stories.length === 1) {
+    const size = Math.min(safeWidth * 0.42, safeHeight * 0.7, 540);
+    return { positions: [{ left: 50, top: 50 }], sizes: [size] };
+  }
 
   const outerIndices = Array.from({ length: stories.length - 1 }, (_, i) => i + 1);
   const random = seededRandom(hashString(`${metric}:${stories.map((story) => story.id).join("|")}`));
@@ -179,7 +191,7 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
     const centerRadius = radii[0];
     const distances = outerIndices.map((storyIndex) => centerRadius + radii[storyIndex] + bubbleGap);
 
-    for (let iteration = 0; iteration < 180; iteration += 1) {
+    for (let iteration = 0; iteration < 240; iteration += 1) {
       let changed = false;
       for (let a = 0; a < outerIndices.length; a += 1) {
         for (let b = a + 1; b < outerIndices.length; b += 1) {
@@ -191,8 +203,8 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
           const by = Math.sin(angles[b]) * distances[b];
           const actual = Math.hypot(ax - bx, ay - by);
           const required = radii[indexA] + radii[indexB] + bubbleGap;
-          if (actual < required - 0.05) {
-            const push = (required - actual) * 0.58 + 0.2;
+          if (actual < required - 0.1) {
+            const push = (required - actual) * 0.56 + 0.25;
             distances[a] += push;
             distances[b] += push;
             changed = true;
@@ -214,13 +226,13 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
     for (let a = 0; a < positionsPx.length && fits; a += 1) {
       const pa = positionsPx[a];
       const ra = radii[a];
-      if (pa.x - ra < edgeGap || pa.x + ra > width - edgeGap || pa.y - ra < edgeGap || pa.y + ra > height - edgeGap) {
+      if (pa.x - ra < edgeGap || pa.x + ra > safeWidth - edgeGap || pa.y - ra < edgeGap || pa.y + ra > safeHeight - edgeGap) {
         fits = false;
         break;
       }
       for (let b = a + 1; b < positionsPx.length; b += 1) {
         const pb = positionsPx[b];
-        if (Math.hypot(pa.x - pb.x, pa.y - pb.y) < ra + radii[b] + bubbleGap - 0.05) {
+        if (Math.hypot(pa.x - pb.x, pa.y - pb.y) < ra + radii[b] + bubbleGap - 0.1) {
           fits = false;
           break;
         }
@@ -229,16 +241,10 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
     return { sizes, positionsPx, fits };
   }
 
-  let low = 0.2;
-  let lowCandidate = buildAtScale(low);
-  while (!lowCandidate.fits && low > 0.03) {
-    low *= 0.75;
-    lowCandidate = buildAtScale(low);
-  }
-
-  let best = lowCandidate;
-  let high = 4;
-  for (let iteration = 0; iteration < 36; iteration += 1) {
+  let low = 0.15;
+  let best = buildAtScale(low);
+  let high = 6;
+  for (let iteration = 0; iteration < 42; iteration += 1) {
     const mid = (low + high) / 2;
     const candidate = buildAtScale(mid);
     if (candidate.fits) {
@@ -251,16 +257,44 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
 
   return {
     sizes: best.sizes.map((size) => Math.round(size)),
-    positions: best.positionsPx.map((position) => ({ left: (position.x / width) * 100, top: (position.y / height) * 100 })),
+    positions: best.positionsPx.map((position) => ({
+      left: (position.x / safeWidth) * 100,
+      top: (position.y / safeHeight) * 100,
+    })),
   };
+}
+
+function ringPlacement(index: number, total: number, availableWidth: number, availableHeight: number) {
+  const firstRing = Math.min(total, 8);
+  const ring = index < firstRing ? 0 : Math.floor((index - firstRing) / 12) + 1;
+  const ringStart = ring === 0 ? 0 : firstRing + (ring - 1) * 12;
+  const ringCapacity = ring === 0 ? firstRing : Math.min(12, total - ringStart);
+  const slot = index - ringStart;
+  const maxRadius = Math.max(150, Math.min(availableWidth, availableHeight) / 2 - 56);
+  const ringCount = total <= 8 ? 1 : Math.ceil((total - 8) / 12) + 1;
+  const radiusStep = maxRadius / Math.max(ringCount, 1);
+  const radius = Math.min(maxRadius, radiusStep * (ring + 1));
+  const angle = -Math.PI / 2 + (slot / Math.max(ringCapacity, 1)) * Math.PI * 2 + (ring % 2) * 0.13;
+  return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius, ring, ringCount };
 }
 
 export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   const [metric, setMetric] = useState<MetricKey>("exposure_score");
   const [limit, setLimit] = useState(Math.min(10, Math.max(1, stories.length)));
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
-  const [selectedCustomTopicName, setSelectedCustomTopicName] = useState<string | null>(null);
   const [openItem, setOpenItem] = useState<Item | null>(null);
+  const [focusLevel, setFocusLevel] = useState(1);
+  const [viewport, setViewport] = useState({ width: 1480, height: 640 });
+
+  useEffect(() => {
+    const measure = () => setViewport({
+      width: window.innerWidth,
+      height: Math.max(430, window.innerHeight - 112),
+    });
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
 
   const displayed = useMemo(
     () => [...stories].sort((a, b) => metricValue(b, metric) - metricValue(a, metric)).slice(0, Math.min(limit, 10)),
@@ -268,16 +302,13 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   );
 
   const selectedStory = selectedStoryId ? stories.find((story) => story.id === selectedStoryId) ?? null : null;
-  const selectedCustomTopic = selectedCustomTopicName ? customTopics.find((topic) => topic.name === selectedCustomTopicName) ?? null : null;
   const maxValue = Math.max(...displayed.map((story) => metricValue(story, metric)), 1);
 
-  function baseSizeFor(value: number) {
-    const ratio = Math.max(value, 1) / maxValue;
-    return 210 * Math.sqrt(ratio);
-  }
-
-  const baseSizes = displayed.map((story) => baseSizeFor(metricValue(story, metric)));
-  const layout = useMemo(() => makeRadialLayout(displayed, baseSizes, metric), [displayed, metric, baseSizes.join(",")]);
+  const baseSizes = displayed.map((story) => 210 * Math.sqrt(Math.max(metricValue(story, metric), 1) / maxValue));
+  const layout = useMemo(
+    () => makeRadialLayout(displayed, baseSizes, metric, viewport.width, viewport.height),
+    [displayed, metric, viewport.width, viewport.height, baseSizes.join(",")]
+  );
 
   const controls = (
     <div className="controlBar">
@@ -296,94 +327,50 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
     </div>
   );
 
-  const focusItems = selectedStory ? flattenItems(selectedStory).slice(0, 10) : selectedCustomTopic?.items ?? [];
-  const focusTitle = selectedStory ? shortTopic(selectedStory.title) : selectedCustomTopic?.name ?? "";
+  const allFocusItems = selectedStory ? flattenItems(selectedStory) : [];
+  const visibleFocusCount = Math.min(allFocusItems.length, 6 + (focusLevel - 1) * 8);
+  const focusItems = allFocusItems.slice(0, visibleFocusCount);
+  const focusTitle = selectedStory ? shortTopic(selectedStory.title) : "";
   const focusColor = selectedStory
     ? bubbleColors[Math.max(0, stories.findIndex((s) => s.id === selectedStory.id)) % bubbleColors.length]
-    : "#ef4444";
+    : bubbleColors[0];
+  const focusRingCount = focusItems.length <= 8 ? 1 : Math.ceil((focusItems.length - 8) / 12) + 1;
+  const focusBubbleSize = Math.max(74, Math.min(130, 132 - (focusRingCount - 1) * 18));
+  const centerBubbleSize = Math.max(180, Math.min(330, 330 - (focusRingCount - 1) * 42));
 
   return (
     <div className="visualizerShell">
       <header className="brandBanner">
-        <div className="bannerSilhouette bannerSilhouetteLeft" aria-hidden="true">
-          <svg viewBox="0 0 260 90" role="img">
-            <path d="M12 76h236v7H12zM38 76V24h9v52zm175 0V24h9v52zM31 24h23v7H31zm175 0h23v7h-23z" />
-            <path d="M42 28C67 53 91 62 130 62s63-9 88-34v7c-25 25-50 34-88 34S67 60 42 35z" />
-            <path d="M46 31v45m17-29v29m18-18v18m18-10v10m18-6v6m26-6v6m18-10v10m18-18v18m18-29v29m17-45v45" stroke="currentColor" strokeWidth="3" fill="none" />
-          </svg>
-        </div>
+        <div className="bannerSilhouette bannerSilhouetteLeft" aria-hidden="true" />
         <div className="brandCopy">
           <h1>BUTTER NEWS</h1>
           <p>Sacramento - San Jose - San Francisco</p>
         </div>
-        <div className="bannerSilhouette bannerSilhouetteRight" aria-hidden="true">
-          <svg viewBox="0 0 260 90" role="img">
-            <path d="M8 78 50 54l25 10 45-49 26 27 22-16 84 52H8z" />
-            <path d="m97 40 23-25 26 27-10-5-7 10-9-10-8 9z" fill="#ffffff" />
-            <path d="m154 42 14-16 29 18-11-2-7 7-8-6-8 6z" fill="#ffffff" />
-          </svg>
-        </div>
+        <div className="bannerSilhouette bannerSilhouetteRight" aria-hidden="true" />
       </header>
       {controls}
 
-      {!selectedStory && !selectedCustomTopic ? (
+      {!selectedStory ? (
         <div className={styles.overviewSplit}>
-          <aside className={styles.customTopicsPanel} aria-label="Custom topics">
-            <div className={styles.customTopicsHeading}>
-              <span>YOUR CUSTOM TOPICS</span>
-              <strong>Niche news you choose</strong>
-            </div>
-
-            <div className={styles.customTopicRows}>
-              {customTopics.map((topic) => (
-                <section className={styles.customTopicRow} key={topic.name}>
-                  <button
-                    type="button"
-                    className={styles.customTopicLabelButton}
-                    onClick={() => setSelectedCustomTopicName(topic.name)}
-                    aria-label={`Open custom topic: ${topic.name}`}
-                  >
-                    {topic.name}
-                  </button>
-
-                  <div className={styles.customArticleRow}>
-                    {topic.items.slice(0, 4).map((item) => (
-                      <button
-                        type="button"
-                        className={styles.customArticleCard}
-                        key={item.id}
-                        onClick={() => setOpenItem(item)}
-                        aria-label={`Read custom-topic article: ${item.title}`}
-                      >
-                        <span className={styles.customArticleImage} style={{ backgroundImage: `url(${item.image_url ?? fallbackImage(item.id)})` }} />
-                        <span className={styles.customArticleTitle}>{item.title}</span>
-                      </button>
-                    ))}
-                  </div>
-                </section>
-              ))}
-            </div>
-          </aside>
-
           <section className="bubbleStage circularStage overviewView" aria-label="Story bubble visualization">
             {displayed.map((story, storyIndex) => {
               const value = metricValue(story, metric);
               const size = layout.sizes[storyIndex];
               const position = layout.positions[storyIndex];
-              const items = flattenItems(story).slice(0, 8);
+              const items = flattenItems(story).slice(0, 3);
               const bubbleColor = bubbleColors[storyIndex % bubbleColors.length];
-              const topicFont = Math.max(10, Math.min(24, size * 0.1));
+              const topicFont = Math.max(10, Math.min(25, size * 0.1));
               const metricFont = Math.max(7, Math.min(12, size * 0.047));
-              const dx = (position.left - 50) * 9.4;
-              const dy = (position.top - 50) * 6.35;
-              const outwardAngle = Math.atan2(dy, dx);
+              const dx = (position.left - 50) * viewport.width / 100;
+              const dy = (position.top - 50) * viewport.height / 100;
+              const outwardAngle = storyIndex === 0 ? -Math.PI / 2 : Math.atan2(dy, dx);
 
               return (
                 <div key={story.id} className="storyCluster overviewCluster" style={{ left: `${position.left}%`, top: `${position.top}%`, width: size, height: size }}>
                   <button
                     type="button"
                     className="storyBubble mainBubbleButton solidBubble"
-                    onClick={() => setSelectedStoryId(story.id)}
+                    onClick={() => { setSelectedStoryId(story.id); setFocusLevel(1); }}
                     aria-label={`Open story: ${story.title}`}
                     style={{ width: size, height: size, backgroundColor: bubbleColor, padding: Math.max(8, size * 0.085) }}
                   >
@@ -391,17 +378,28 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
                     <span className="bubbleMetric" style={{ fontSize: metricFont }}>{metricLabels[metric]} {value}</span>
                   </button>
 
-                  <div className="decorativeOrbit" aria-hidden="true">
+                  <div className="decorativeOrbit">
                     {items.map((item, itemIndex) => {
                       const count = Math.max(items.length, 1);
                       const angle = storyIndex === 0
                         ? -Math.PI / 2 + (itemIndex / count) * Math.PI * 2
                         : outwardAngle - Math.PI / 2 + ((itemIndex + 0.5) / count) * Math.PI;
-                      const orbit = size / 2 + 30;
+                      const orbit = size / 2 + 34;
                       const left = size / 2 + Math.cos(angle) * orbit;
                       const top = size / 2 + Math.sin(angle) * orbit;
                       const itemImage = item.image_url ?? fallbackImage(item.id);
-                      return <span key={item.id} className={`subBubble subBubbleDecorative ${styles.overviewSatellite}`} style={{ left, top, backgroundImage: `url(${itemImage})` }} />;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          className={`subBubble subBubbleDecorative ${styles.overviewSatellite} ${styles.clickableOverviewSatellite}`}
+                          style={{ left, top, backgroundImage: `url(${itemImage})` }}
+                          onClick={(event) => { event.stopPropagation(); setOpenItem(item); }}
+                          aria-label={`Read article: ${item.title}`}
+                        >
+                          <span className={styles.satelliteLabel}>{item.title}</span>
+                        </button>
+                      );
                     })}
                   </div>
                 </div>
@@ -411,33 +409,29 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
         </div>
       ) : (
         <section className="bubbleStage focusView" aria-label="Selected topic with related articles">
-          <button
-            className="backButton"
-            onClick={() => {
-              setSelectedStoryId(null);
-              setSelectedCustomTopicName(null);
-              setOpenItem(null);
-            }}
-          >
-            ← All stories
-          </button>
+          <button className="backButton" onClick={() => { setSelectedStoryId(null); setOpenItem(null); setFocusLevel(1); }}>← All stories</button>
 
-          <div className="focusScene">
-            <div className="focusOrbitRing" />
-            <div
-              className={`storyBubble focusMainBubble solidBubble ${selectedCustomTopic ? styles.customFocusMainBubble : ""}`}
-              style={{ backgroundColor: focusColor }}
+          <div className="focusScene" style={{ width: "96vw", height: "calc(100svh - 120px)", minHeight: 0 }}>
+            {Array.from({ length: focusRingCount }).map((_, ringIndex) => {
+              const maxRadius = Math.max(150, Math.min(viewport.width * 0.96, viewport.height) / 2 - 56);
+              const diameter = (maxRadius / focusRingCount) * (ringIndex + 1) * 2;
+              return <div key={ringIndex} className="focusOrbitRing" style={{ width: diameter, height: diameter }} />;
+            })}
+
+            <button
+              type="button"
+              className="storyBubble focusMainBubble solidBubble"
+              style={{ backgroundColor: focusColor, width: centerBubbleSize, height: centerBubbleSize }}
+              onClick={() => setFocusLevel((level) => level + 1)}
+              aria-label="Show more related articles"
             >
               <strong>{focusTitle}</strong>
-              {selectedStory && <span className="bubbleMetric">{metricLabels[metric]} {metricValue(selectedStory, metric)}</span>}
-              {selectedCustomTopic && <span className="bubbleMetric">CUSTOM TOPIC</span>}
-            </div>
+              <span className="bubbleMetric">{metricLabels[metric]} {metricValue(selectedStory, metric)}</span>
+              {visibleFocusCount < allFocusItems.length && <span className={styles.moreHint}>Click for more articles</span>}
+            </button>
 
-            {focusItems.map((item, index, allItems) => {
-              const angle = -Math.PI / 2 + (index / Math.max(allItems.length, 1)) * Math.PI * 2;
-              const orbit = 285;
-              const x = Math.cos(angle) * orbit;
-              const y = Math.sin(angle) * orbit;
+            {focusItems.map((item, index) => {
+              const { x, y } = ringPlacement(index, focusItems.length, viewport.width * 0.96, viewport.height);
               const itemImage = item.image_url ?? fallbackImage(item.id);
               return (
                 <button
@@ -446,13 +440,18 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
                   className="subBubble focusSubBubble"
                   onClick={() => setOpenItem(item)}
                   style={{
+                    width: focusBubbleSize,
+                    height: focusBubbleSize,
+                    marginLeft: -focusBubbleSize / 2,
+                    marginTop: -focusBubbleSize / 2,
                     left: `calc(50% + ${x}px)`,
                     top: `calc(50% + ${y}px)`,
-                    backgroundImage: `linear-gradient(rgba(0,0,0,.34), rgba(0,0,0,.62)), url(${itemImage})`,
+                    backgroundImage: `linear-gradient(rgba(0,0,0,.24), rgba(0,0,0,.56)), url(${itemImage})`,
                   }}
                   aria-label={`Read article: ${item.title}`}
                 >
-                  <span>{item.title}</span>
+                  <span className={styles.focusArticleTitle}>{item.title}</span>
+                  <span className={styles.focusArticleLabel}>ARTICLE</span>
                 </button>
               );
             })}
