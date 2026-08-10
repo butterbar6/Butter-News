@@ -159,7 +159,7 @@ function seededRandom(seed: number) {
 }
 
 function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: MetricKey, width: number, height: number): RadialLayout {
-  const safeWidth = Math.max(700, width - 28);
+  const safeWidth = Math.max(520, width - 28);
   const safeHeight = Math.max(420, height - 28);
   const centerX = safeWidth / 2;
   const centerY = safeHeight / 2;
@@ -301,6 +301,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   const [limit, setLimit] = useState(Math.min(10, Math.max(1, stories.length)));
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
   const [openItem, setOpenItem] = useState<Item | null>(null);
+  const [viewedArticleIds, setViewedArticleIds] = useState<Set<string>>(() => new Set());
   const [focusLevel, setFocusLevel] = useState(1);
   const [viewport, setViewport] = useState({ width: 1480, height: 640 });
 
@@ -311,6 +312,20 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
     return () => window.removeEventListener("resize", measure);
   }, []);
 
+  function openArticle(item: Item) {
+    setViewedArticleIds((current) => {
+      const next = new Set(current);
+      next.add(item.id);
+      return next;
+    });
+    setOpenItem(item);
+  }
+
+  const articlePanelWidth = openItem
+    ? Math.round(Math.min(460, Math.max(320, viewport.width * 0.30)))
+    : 0;
+  const stageWidth = Math.max(520, viewport.width - articlePanelWidth);
+
   const displayed = useMemo(
     () => [...stories].sort((a, b) => metricValue(b, metric) - metricValue(a, metric)).slice(0, Math.min(limit, 10)),
     [stories, metric, limit]
@@ -319,8 +334,8 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   const maxValue = Math.max(...displayed.map((story) => metricValue(story, metric)), 1);
   const baseSizes = displayed.map((story) => 210 * Math.sqrt(Math.max(metricValue(story, metric), 1) / maxValue));
   const layout = useMemo(
-    () => makeRadialLayout(displayed, baseSizes, metric, viewport.width, viewport.height),
-    [displayed, metric, viewport.width, viewport.height, baseSizes.join(",")]
+    () => makeRadialLayout(displayed, baseSizes, metric, stageWidth, viewport.height),
+    [displayed, metric, stageWidth, viewport.height, baseSizes.join(",")]
   );
 
   const controls = (
@@ -345,7 +360,11 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   const focusItems = allFocusItems.slice(0, visibleFocusCount);
   const focusTitle = selectedStory ? shortTopic(selectedStory.title) : "";
   const focusColor = selectedStory ? bubbleColors[Math.max(0, stories.findIndex((s) => s.id === selectedStory.id)) % bubbleColors.length] : bubbleColors[0];
-  const focusLayout = makeFocusLayout(focusItems.length, viewport.width * 0.96, viewport.height);
+  const focusLayout = makeFocusLayout(focusItems.length, stageWidth * 0.96, viewport.height);
+
+  const stageStyle = articlePanelWidth
+    ? { marginLeft: articlePanelWidth, width: `calc(100% - ${articlePanelWidth}px)` }
+    : undefined;
 
   return (
     <div className="visualizerShell">
@@ -358,7 +377,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
 
       {!selectedStory ? (
         <div className={styles.overviewSplit}>
-          <section className="bubbleStage circularStage overviewView" aria-label="Story bubble visualization">
+          <section className="bubbleStage circularStage overviewView" aria-label="Story bubble visualization" style={stageStyle}>
             {displayed.map((story, storyIndex) => {
               const value = metricValue(story, metric);
               const size = layout.sizes[storyIndex];
@@ -367,7 +386,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
               const bubbleColor = bubbleColors[storyIndex % bubbleColors.length];
               const topicFont = Math.max(10, Math.min(25, size * 0.1));
               const metricFont = Math.max(7, Math.min(12, size * 0.047));
-              const dx = (position.left - 50) * viewport.width / 100;
+              const dx = (position.left - 50) * stageWidth / 100;
               const dy = (position.top - 50) * viewport.height / 100;
               const outwardAngle = storyIndex === 0 ? -Math.PI / 2 : Math.atan2(dy, dx);
 
@@ -388,9 +407,10 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
                       const left = size / 2 + Math.cos(angle) * orbit;
                       const top = size / 2 + Math.sin(angle) * orbit;
                       const itemImage = item.image_url ?? fallbackImage(item.id);
+                      const viewed = viewedArticleIds.has(item.id);
                       return (
-                        <button key={item.id} type="button" className={`subBubble subBubbleDecorative ${styles.overviewSatellite} ${styles.clickableOverviewSatellite}`} style={{ left, top, backgroundImage: `url(${itemImage})` }} onClick={(event) => { event.stopPropagation(); setOpenItem(item); }} aria-label={`Read article: ${item.title}`}>
-                          <span className={styles.satelliteLabel}>{item.title}</span>
+                        <button key={item.id} type="button" className={`subBubble subBubbleDecorative ${styles.overviewSatellite} ${styles.clickableOverviewSatellite}`} style={{ left, top, backgroundImage: `url(${itemImage})` }} onClick={(event) => { event.stopPropagation(); openArticle(item); }} aria-label={`Read article: ${item.title}`}>
+                          <span className={`${styles.satelliteLabel} ${viewed ? styles.viewedLabel : styles.unreadLabel}`}>{item.title}</span>
                         </button>
                       );
                     })}
@@ -401,9 +421,9 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
           </section>
         </div>
       ) : (
-        <section className="bubbleStage focusView" aria-label="Selected topic with related articles">
+        <section className="bubbleStage focusView" aria-label="Selected topic with related articles" style={stageStyle}>
           <button className="backButton" onClick={() => { setSelectedStoryId(null); setOpenItem(null); setFocusLevel(1); }}>← All stories</button>
-          <div className="focusScene" style={{ width: "96vw", height: "calc(100svh - 120px)", minHeight: 0 }}>
+          <div className="focusScene" style={{ width: Math.max(500, stageWidth * 0.96), height: "calc(100svh - 120px)", minHeight: 0 }}>
             {focusLayout.ringRadii.map((radius, ringIndex) => <div key={ringIndex} className="focusOrbitRing" style={{ width: radius * 2, height: radius * 2 }} />)}
             <button type="button" className="storyBubble focusMainBubble solidBubble" style={{ backgroundColor: focusColor, width: focusLayout.centerSize, height: focusLayout.centerSize }} onClick={() => setFocusLevel((level) => Math.min(level + 1, 10))} aria-label="Show more related articles">
               <strong>{focusTitle}</strong>
@@ -417,10 +437,11 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
               const itemImage = item.image_url ?? fallbackImage(item.id);
               const titleWidth = Math.max(72, Math.min(132, focusLayout.bubbleSize * 1.65));
               const titleFont = focusLayout.bubbleSize < 50 ? 6.5 : focusLayout.bubbleSize < 70 ? 7.5 : 9;
+              const viewed = viewedArticleIds.has(item.id);
               return (
-                <button key={item.id} type="button" className="subBubble focusSubBubble" onClick={() => setOpenItem(item)} style={{ width: focusLayout.bubbleSize, height: focusLayout.bubbleSize, marginLeft: -focusLayout.bubbleSize / 2, marginTop: -focusLayout.bubbleSize / 2, left: `calc(50% + ${placement.x}px)`, top: `calc(50% + ${placement.y}px)`, padding: 3, backgroundImage: `linear-gradient(rgba(0,0,0,.24), rgba(0,0,0,.56)), url(${itemImage})` }} aria-label={`Read article ${index + 1}: ${item.title}`}>
+                <button key={item.id} type="button" className="subBubble focusSubBubble" onClick={() => openArticle(item)} style={{ width: focusLayout.bubbleSize, height: focusLayout.bubbleSize, marginLeft: -focusLayout.bubbleSize / 2, marginTop: -focusLayout.bubbleSize / 2, left: `calc(50% + ${placement.x}px)`, top: `calc(50% + ${placement.y}px)`, padding: 3, backgroundImage: `linear-gradient(rgba(0,0,0,.24), rgba(0,0,0,.56)), url(${itemImage})` }} aria-label={`Read article ${index + 1}: ${item.title}`}>
                   <span className={styles.focusArticleNumber}>{index + 1}</span>
-                  <span className={styles.focusArticleTitle} style={{ width: titleWidth, fontSize: titleFont }}>{item.title}</span>
+                  <span className={`${styles.focusArticleTitle} ${viewed ? styles.viewedLabel : styles.unreadLabel}`} style={{ width: titleWidth, fontSize: titleFont }}>{item.title}</span>
                 </button>
               );
             })}
@@ -429,8 +450,8 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
       )}
 
       {openItem && (
-        <div className="articleModalBackdrop" role="presentation" onClick={() => setOpenItem(null)}>
-          <article className="articleModal" role="dialog" aria-modal="true" aria-label={openItem.title} onClick={(e) => e.stopPropagation()}>
+        <div className="articleModalBackdrop articleReaderDock" role="presentation" style={{ width: articlePanelWidth }}>
+          <article className="articleModal" role="dialog" aria-modal="false" aria-label={openItem.title} onClick={(e) => e.stopPropagation()}>
             <button className="modalClose" onClick={() => setOpenItem(null)} aria-label="Close article">×</button>
             <div className="articleHero" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.55)), url(${openItem.image_url ?? fallbackImage(openItem.id)})` }} />
             <div className="articleModalBody">
