@@ -16,11 +16,7 @@ type Item = {
   sources: Source;
 };
 type StoryItem = { items: Item | Item[] | null };
-
-type CustomTopic = {
-  name: string;
-  items: Item[];
-};
+type CustomTopic = { name: string; items: Item[] };
 
 export type BubbleStory = {
   id: string;
@@ -48,80 +44,45 @@ const bubbleColors = [
   "#62c9c5", "#ffd54f", "#ee7aa8", "#67b7d8", "#8e83d8",
 ];
 
+function customItem(id: string, title: string, seed: string, content: string): Item {
+  return {
+    id,
+    title,
+    url: "#",
+    content,
+    author: "Butter News Demo",
+    published_at: null,
+    image_url: `https://picsum.photos/seed/${seed}/500/300`,
+    sources: { name: "Custom Feed" },
+  };
+}
+
 const customTopics: CustomTopic[] = [
   {
     name: "Australian Rugby",
     items: [
-      {
-        id: "custom-rugby-1",
-        title: "Wallabies reshape squad ahead of next test window",
-        url: "#",
-        content: "This is placeholder custom-topic content for the Butter News prototype. In the production version, this card will be populated from the user's selected niche topics and the same article ingestion system used elsewhere in the site.",
-        author: "Butter News Demo",
-        published_at: null,
-        image_url: "https://picsum.photos/seed/australia-rugby-1/500/300",
-        sources: { name: "Custom Feed" },
-      },
-      {
-        id: "custom-rugby-2",
-        title: "Super Rugby clubs prepare for late-season push",
-        url: "#",
-        content: "This is placeholder custom-topic content. The eventual custom-topic system will let each user choose narrow interests that may never become major global bubble stories.",
-        author: "Butter News Demo",
-        published_at: null,
-        image_url: "https://picsum.photos/seed/australia-rugby-2/500/300",
-        sources: { name: "Custom Feed" },
-      },
+      customItem("custom-rugby-1", "Wallabies reshape squad ahead of next test window", "australia-rugby-1", "Prototype custom-topic article for the future user-selected niche news system."),
+      customItem("custom-rugby-2", "Super Rugby clubs prepare for late-season push", "australia-rugby-2", "Prototype custom-topic article for the future user-selected niche news system."),
+      customItem("custom-rugby-3", "Rugby Australia reviews development pipeline", "australia-rugby-3", "Prototype custom-topic article for the future user-selected niche news system."),
+      customItem("custom-rugby-4", "Australian clubs track emerging academy talent", "australia-rugby-4", "Prototype custom-topic article for the future user-selected niche news system."),
     ],
   },
   {
     name: "Aerospace Startups",
     items: [
-      {
-        id: "custom-aero-1",
-        title: "Small aerospace firms compete for new funding rounds",
-        url: "#",
-        content: "This prototype article represents a user-selected niche feed. Later, these records should come from Supabase and be associated with each user's custom-topic preferences.",
-        author: "Butter News Demo",
-        published_at: null,
-        image_url: "https://picsum.photos/seed/aerospace-startup-1/500/300",
-        sources: { name: "Custom Feed" },
-      },
-      {
-        id: "custom-aero-2",
-        title: "Advanced propulsion startups expand testing programs",
-        url: "#",
-        content: "This is temporary sample data for the custom-topic rail. Clicking any card uses the same in-page reading modal as a View 2 article.",
-        author: "Butter News Demo",
-        published_at: null,
-        image_url: "https://picsum.photos/seed/aerospace-startup-2/500/300",
-        sources: { name: "Custom Feed" },
-      },
+      customItem("custom-aero-1", "Small aerospace firms compete for new funding rounds", "aerospace-startup-1", "Prototype niche-feed article that will later come from Supabase."),
+      customItem("custom-aero-2", "Advanced propulsion startups expand testing programs", "aerospace-startup-2", "Prototype niche-feed article that will later come from Supabase."),
+      customItem("custom-aero-3", "New launch suppliers target commercial contracts", "aerospace-startup-3", "Prototype niche-feed article that will later come from Supabase."),
+      customItem("custom-aero-4", "Space manufacturing founders pursue fresh capital", "aerospace-startup-4", "Prototype niche-feed article that will later come from Supabase."),
     ],
   },
   {
     name: "Sacramento Growth",
     items: [
-      {
-        id: "custom-sac-1",
-        title: "Regional development projects move into new phases",
-        url: "#",
-        content: "This placeholder demonstrates how local or professional niche interests can remain visible even when they are not among the largest stories on the wider internet.",
-        author: "Butter News Demo",
-        published_at: null,
-        image_url: "https://picsum.photos/seed/sacramento-growth-1/500/300",
-        sources: { name: "Custom Feed" },
-      },
-      {
-        id: "custom-sac-2",
-        title: "New investment targets transportation and housing",
-        url: "#",
-        content: "This is placeholder content for a future user-configurable topic feed backed by Supabase.",
-        author: "Butter News Demo",
-        published_at: null,
-        image_url: "https://picsum.photos/seed/sacramento-growth-2/500/300",
-        sources: { name: "Custom Feed" },
-      },
+      customItem("custom-sac-1", "Regional development projects move into new phases", "sacramento-growth-1", "Prototype local custom-topic article for Butter News."),
+      customItem("custom-sac-2", "New investment targets transportation and housing", "sacramento-growth-2", "Prototype local custom-topic article for Butter News."),
+      customItem("custom-sac-3", "Downtown projects bring new commercial activity", "sacramento-growth-3", "Prototype local custom-topic article for Butter News."),
+      customItem("custom-sac-4", "Regional employers expand across the capital area", "sacramento-growth-4", "Prototype local custom-topic article for Butter News."),
     ],
   },
 ];
@@ -200,14 +161,10 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
   const bubbleGap = 4;
 
   if (stories.length === 0) return { positions: [], sizes: [] };
-  if (stories.length === 1) {
-    return { positions: [{ left: 50, top: 50 }], sizes: [Math.min(500, baseSizes[0] * 2.25)] };
-  }
+  if (stories.length === 1) return { positions: [{ left: 50, top: 50 }], sizes: [Math.min(500, baseSizes[0] * 2.25)] };
 
   const outerIndices = Array.from({ length: stories.length - 1 }, (_, i) => i + 1);
-  const seed = hashString(`${metric}:${stories.map((story) => story.id).join("|")}`);
-  const random = seededRandom(seed);
-
+  const random = seededRandom(hashString(`${metric}:${stories.map((story) => story.id).join("|")}`));
   for (let i = outerIndices.length - 1; i > 0; i -= 1) {
     const j = Math.floor(random() * (i + 1));
     [outerIndices[i], outerIndices[j]] = [outerIndices[j], outerIndices[i]];
@@ -245,7 +202,7 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
       if (!changed) break;
     }
 
-    const positionsPx: Array<{ x: number; y: number }> = stories.map(() => ({ x: centerX, y: centerY }));
+    const positionsPx = stories.map(() => ({ x: centerX, y: centerY }));
     outerIndices.forEach((storyIndex, slot) => {
       positionsPx[storyIndex] = {
         x: centerX + Math.cos(angles[slot]) * distances[slot],
@@ -257,23 +214,18 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
     for (let a = 0; a < positionsPx.length && fits; a += 1) {
       const pa = positionsPx[a];
       const ra = radii[a];
-      if (
-        pa.x - ra < edgeGap || pa.x + ra > width - edgeGap ||
-        pa.y - ra < edgeGap || pa.y + ra > height - edgeGap
-      ) {
+      if (pa.x - ra < edgeGap || pa.x + ra > width - edgeGap || pa.y - ra < edgeGap || pa.y + ra > height - edgeGap) {
         fits = false;
         break;
       }
       for (let b = a + 1; b < positionsPx.length; b += 1) {
         const pb = positionsPx[b];
-        const required = ra + radii[b] + bubbleGap;
-        if (Math.hypot(pa.x - pb.x, pa.y - pb.y) < required - 0.05) {
+        if (Math.hypot(pa.x - pb.x, pa.y - pb.y) < ra + radii[b] + bubbleGap - 0.05) {
           fits = false;
           break;
         }
       }
     }
-
     return { sizes, positionsPx, fits };
   }
 
@@ -299,10 +251,7 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
 
   return {
     sizes: best.sizes.map((size) => Math.round(size)),
-    positions: best.positionsPx.map((position) => ({
-      left: (position.x / width) * 100,
-      top: (position.y / height) * 100,
-    })),
+    positions: best.positionsPx.map((position) => ({ left: (position.x / width) * 100, top: (position.y / height) * 100 })),
   };
 }
 
@@ -310,6 +259,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   const [metric, setMetric] = useState<MetricKey>("exposure_score");
   const [limit, setLimit] = useState(Math.min(10, Math.max(1, stories.length)));
   const [selectedStoryId, setSelectedStoryId] = useState<string | null>(null);
+  const [selectedCustomTopicName, setSelectedCustomTopicName] = useState<string | null>(null);
   const [openItem, setOpenItem] = useState<Item | null>(null);
 
   const displayed = useMemo(
@@ -318,12 +268,12 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   );
 
   const selectedStory = selectedStoryId ? stories.find((story) => story.id === selectedStoryId) ?? null : null;
+  const selectedCustomTopic = selectedCustomTopicName ? customTopics.find((topic) => topic.name === selectedCustomTopicName) ?? null : null;
   const maxValue = Math.max(...displayed.map((story) => metricValue(story, metric)), 1);
 
   function baseSizeFor(value: number) {
-    const referenceDiameter = 210;
     const ratio = Math.max(value, 1) / maxValue;
-    return referenceDiameter * Math.sqrt(ratio);
+    return 210 * Math.sqrt(ratio);
   }
 
   const baseSizes = displayed.map((story) => baseSizeFor(metricValue(story, metric)));
@@ -346,6 +296,12 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
     </div>
   );
 
+  const focusItems = selectedStory ? flattenItems(selectedStory).slice(0, 10) : selectedCustomTopic?.items ?? [];
+  const focusTitle = selectedStory ? shortTopic(selectedStory.title) : selectedCustomTopic?.name ?? "";
+  const focusColor = selectedStory
+    ? bubbleColors[Math.max(0, stories.findIndex((s) => s.id === selectedStory.id)) % bubbleColors.length]
+    : "#ef4444";
+
   return (
     <div className="visualizerShell">
       <header className="brandBanner">
@@ -354,7 +310,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
       </header>
       {controls}
 
-      {!selectedStory ? (
+      {!selectedStory && !selectedCustomTopic ? (
         <div className={styles.overviewSplit}>
           <aside className={styles.customTopicsPanel} aria-label="Custom topics">
             <div className={styles.customTopicsHeading}>
@@ -365,9 +321,17 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
             <div className={styles.customTopicRows}>
               {customTopics.map((topic) => (
                 <section className={styles.customTopicRow} key={topic.name}>
-                  <div className={styles.customTopicLabel}>{topic.name}</div>
+                  <button
+                    type="button"
+                    className={styles.customTopicLabelButton}
+                    onClick={() => setSelectedCustomTopicName(topic.name)}
+                    aria-label={`Open custom topic: ${topic.name}`}
+                  >
+                    {topic.name}
+                  </button>
+
                   <div className={styles.customArticleRow}>
-                    {topic.items.map((item) => (
+                    {topic.items.slice(0, 4).map((item) => (
                       <button
                         type="button"
                         className={styles.customArticleCard}
@@ -375,10 +339,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
                         onClick={() => setOpenItem(item)}
                         aria-label={`Read custom-topic article: ${item.title}`}
                       >
-                        <span
-                          className={styles.customArticleImage}
-                          style={{ backgroundImage: `url(${item.image_url ?? fallbackImage(item.id)})` }}
-                        />
+                        <span className={styles.customArticleImage} style={{ backgroundImage: `url(${item.image_url ?? fallbackImage(item.id)})` }} />
                         <span className={styles.customArticleTitle}>{item.title}</span>
                       </button>
                     ))}
@@ -403,7 +364,13 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
 
               return (
                 <div key={story.id} className="storyCluster overviewCluster" style={{ left: `${position.left}%`, top: `${position.top}%`, width: size, height: size }}>
-                  <button type="button" className="storyBubble mainBubbleButton solidBubble" onClick={() => setSelectedStoryId(story.id)} aria-label={`Open story: ${story.title}`} style={{ width: size, height: size, backgroundColor: bubbleColor, padding: Math.max(8, size * 0.085) }}>
+                  <button
+                    type="button"
+                    className="storyBubble mainBubbleButton solidBubble"
+                    onClick={() => setSelectedStoryId(story.id)}
+                    aria-label={`Open story: ${story.title}`}
+                    style={{ width: size, height: size, backgroundColor: bubbleColor, padding: Math.max(8, size * 0.085) }}
+                  >
                     <strong style={{ fontSize: topicFont }}>{topicForSize(story.title, size)}</strong>
                     <span className="bubbleMetric" style={{ fontSize: metricFont }}>{metricLabels[metric]} {value}</span>
                   </button>
@@ -427,22 +394,48 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
           </section>
         </div>
       ) : (
-        <section className="bubbleStage focusView" aria-label="Selected story with related articles">
-          <button className="backButton" onClick={() => { setSelectedStoryId(null); setOpenItem(null); }}>← All stories</button>
+        <section className="bubbleStage focusView" aria-label="Selected topic with related articles">
+          <button
+            className="backButton"
+            onClick={() => {
+              setSelectedStoryId(null);
+              setSelectedCustomTopicName(null);
+              setOpenItem(null);
+            }}
+          >
+            ← All stories
+          </button>
+
           <div className="focusScene">
             <div className="focusOrbitRing" />
-            <div className="storyBubble focusMainBubble solidBubble" style={{ backgroundColor: bubbleColors[Math.max(0, stories.findIndex((s) => s.id === selectedStory.id)) % bubbleColors.length] }}>
-              <strong>{shortTopic(selectedStory.title)}</strong>
-              <span className="bubbleMetric">{metricLabels[metric]} {metricValue(selectedStory, metric)}</span>
+            <div
+              className={`storyBubble focusMainBubble solidBubble ${selectedCustomTopic ? styles.customFocusMainBubble : ""}`}
+              style={{ backgroundColor: focusColor }}
+            >
+              <strong>{focusTitle}</strong>
+              {selectedStory && <span className="bubbleMetric">{metricLabels[metric]} {metricValue(selectedStory, metric)}</span>}
+              {selectedCustomTopic && <span className="bubbleMetric">CUSTOM TOPIC</span>}
             </div>
-            {flattenItems(selectedStory).slice(0, 10).map((item, index, allItems) => {
+
+            {focusItems.map((item, index, allItems) => {
               const angle = -Math.PI / 2 + (index / Math.max(allItems.length, 1)) * Math.PI * 2;
               const orbit = 285;
               const x = Math.cos(angle) * orbit;
               const y = Math.sin(angle) * orbit;
               const itemImage = item.image_url ?? fallbackImage(item.id);
               return (
-                <button key={item.id} type="button" className="subBubble focusSubBubble" onClick={() => setOpenItem(item)} style={{ left: `calc(50% + ${x}px)`, top: `calc(50% + ${y}px)`, backgroundImage: `linear-gradient(rgba(0,0,0,.34), rgba(0,0,0,.62)), url(${itemImage})` }} aria-label={`Read article: ${item.title}`}>
+                <button
+                  key={item.id}
+                  type="button"
+                  className="subBubble focusSubBubble"
+                  onClick={() => setOpenItem(item)}
+                  style={{
+                    left: `calc(50% + ${x}px)`,
+                    top: `calc(50% + ${y}px)`,
+                    backgroundImage: `linear-gradient(rgba(0,0,0,.34), rgba(0,0,0,.62)), url(${itemImage})`,
+                  }}
+                  aria-label={`Read article: ${item.title}`}
+                >
                   <span>{item.title}</span>
                 </button>
               );
@@ -460,7 +453,9 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
               <p className="articleMeta">{sourceName(openItem.sources)}{openItem.author ? ` · ${openItem.author}` : ""}{openItem.published_at ? ` · ${new Date(openItem.published_at).toLocaleString()}` : ""}</p>
               <h2>{openItem.title}</h2>
               <div className="articleText">
-                {openItem.content ? openItem.content.split("\n").filter(Boolean).map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p>This test article does not yet contain a full article body. When real article content is ingested into Supabase, it will appear here without redirecting away from Butter News.</p>}
+                {openItem.content
+                  ? openItem.content.split("\n").filter(Boolean).map((paragraph, index) => <p key={index}>{paragraph}</p>)
+                  : <p>This test article does not yet contain a full article body. When real article content is ingested into Supabase, it will appear here without redirecting away from Butter News.</p>}
               </div>
             </div>
           </article>
