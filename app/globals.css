@@ -12,12 +12,12 @@ html, body {
   height: 100%;
   overflow: hidden;
   background:
-    radial-gradient(circle at 8% 18%, #111 0 1px, transparent 1.4px),
-    radial-gradient(circle at 26% 68%, #111 0 1px, transparent 1.4px),
-    radial-gradient(circle at 44% 30%, #111 0 1px, transparent 1.4px),
-    radial-gradient(circle at 68% 70%, #111 0 1px, transparent 1.4px),
-    radial-gradient(circle at 86% 24%, #111 0 1px, transparent 1.4px),
-    radial-gradient(circle at 92% 82%, #111 0 1px, transparent 1.4px),
+    radial-gradient(circle at 8% 18%, #111 0 1.35px, transparent 1.9px),
+    radial-gradient(circle at 26% 68%, #111 0 1.35px, transparent 1.9px),
+    radial-gradient(circle at 44% 30%, #111 0 1.35px, transparent 1.9px),
+    radial-gradient(circle at 68% 70%, #111 0 1.35px, transparent 1.9px),
+    radial-gradient(circle at 86% 24%, #111 0 1.35px, transparent 1.9px),
+    radial-gradient(circle at 92% 82%, #111 0 1.35px, transparent 1.9px),
     #ffffff;
   background-size: 150px 150px, 180px 180px, 210px 210px, 170px 170px, 230px 230px, 190px 190px;
 }
@@ -49,19 +49,22 @@ main {
 
 .brandBanner h1 {
   margin: 0;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: clamp(28px, 3.2vw, 50px);
   line-height: .95;
-  letter-spacing: .025em;
-  font-weight: 800;
+  letter-spacing: .02em;
+  font-weight: 900;
+  font-style: italic;
 }
 
 .brandBanner p {
   margin: 5px 0 0;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: Arial, Helvetica, sans-serif;
   font-size: clamp(14px, 1.35vw, 20px);
   line-height: 1;
-  font-style: italic;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: .03em;
 }
 
 .controlBar {
@@ -190,6 +193,9 @@ main {
   transform: none !important;
   transition: none !important;
   filter: none !important;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .overviewView .subBubbleDecorative:hover {
