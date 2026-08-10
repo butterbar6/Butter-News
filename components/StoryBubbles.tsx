@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import styles from "./StoryBubbles.module.css";
 
 type Metric = { metric_type: string; metric_value: number };
 type Source = { name: string } | { name: string }[] | null;
@@ -354,31 +355,31 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
       {controls}
 
       {!selectedStory ? (
-        <div className="overviewSplit">
-          <aside className="customTopicsPanel" aria-label="Custom topics">
-            <div className="customTopicsHeading">
+        <div className={styles.overviewSplit}>
+          <aside className={styles.customTopicsPanel} aria-label="Custom topics">
+            <div className={styles.customTopicsHeading}>
               <span>YOUR CUSTOM TOPICS</span>
               <strong>Niche news you choose</strong>
             </div>
 
-            <div className="customTopicRows">
+            <div className={styles.customTopicRows}>
               {customTopics.map((topic) => (
-                <section className="customTopicRow" key={topic.name}>
-                  <div className="customTopicLabel">{topic.name}</div>
-                  <div className="customArticleRow">
+                <section className={styles.customTopicRow} key={topic.name}>
+                  <div className={styles.customTopicLabel}>{topic.name}</div>
+                  <div className={styles.customArticleRow}>
                     {topic.items.map((item) => (
                       <button
                         type="button"
-                        className="customArticleCard"
+                        className={styles.customArticleCard}
                         key={item.id}
                         onClick={() => setOpenItem(item)}
                         aria-label={`Read custom-topic article: ${item.title}`}
                       >
                         <span
-                          className="customArticleImage"
+                          className={styles.customArticleImage}
                           style={{ backgroundImage: `url(${item.image_url ?? fallbackImage(item.id)})` }}
                         />
-                        <span className="customArticleTitle">{item.title}</span>
+                        <span className={styles.customArticleTitle}>{item.title}</span>
                       </button>
                     ))}
                   </div>
@@ -417,7 +418,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
                       const left = size / 2 + Math.cos(angle) * orbit;
                       const top = size / 2 + Math.sin(angle) * orbit;
                       const itemImage = item.image_url ?? fallbackImage(item.id);
-                      return <span key={item.id} className="subBubble subBubbleDecorative" style={{ left, top, backgroundImage: `url(${itemImage})` }} />;
+                      return <span key={item.id} className={`subBubble subBubbleDecorative ${styles.overviewSatellite}`} style={{ left, top, backgroundImage: `url(${itemImage})` }} />;
                     })}
                   </div>
                 </div>
