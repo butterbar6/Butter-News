@@ -2,7 +2,7 @@
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(390px, 38%) minmax(0, 1fr);
+  grid-template-columns: minmax(430px, 40%) minmax(0, 1fr);
   overflow: hidden;
 }
 
@@ -10,10 +10,10 @@
   min-width: 0;
   height: 100%;
   overflow: hidden;
-  background: #050505;
-  color: #fff;
+  background: transparent;
+  color: #c40000;
   border-right: 2px solid #111;
-  padding: 14px 14px 12px;
+  padding: 12px 12px 10px;
 }
 
 .customTopicsHeading {
@@ -21,20 +21,20 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  padding: 0 2px 9px;
-  border-bottom: 1px solid rgba(255,255,255,.22);
+  padding: 0 2px 8px;
+  border-bottom: 1px solid rgba(0,0,0,.2);
 }
 
 .customTopicsHeading span {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 900;
   letter-spacing: .12em;
 }
 
 .customTopicsHeading strong {
   font-size: 10px;
-  font-weight: 600;
-  opacity: .58;
+  font-weight: 700;
+  opacity: .72;
 }
 
 .customTopicRows {
@@ -46,29 +46,35 @@
 .customTopicRow {
   min-height: 0;
   display: grid;
-  grid-template-columns: 112px minmax(0, 1fr);
+  grid-template-columns: 118px minmax(0, 1fr);
   align-items: center;
   gap: 10px;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255,255,255,.16);
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(0,0,0,.16);
 }
 
-.customTopicRow:last-child {
-  border-bottom: 0;
-}
+.customTopicRow:last-child { border-bottom: 0; }
 
-.customTopicLabel {
-  font-size: clamp(15px, 1.15vw, 21px);
-  line-height: 1.02;
+.customTopicLabelButton {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #c40000;
+  text-align: left;
+  cursor: pointer;
+  font-size: clamp(15px, 1.08vw, 20px);
+  line-height: 1.03;
   font-weight: 900;
-  letter-spacing: -.025em;
+  letter-spacing: -.02em;
 }
+
+.customTopicLabelButton:hover { text-decoration: underline; }
 
 .customArticleRow {
   min-width: 0;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 9px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
 }
 
 .customArticleCard {
@@ -76,7 +82,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  color: #fff;
+  color: #c40000;
   text-align: left;
   cursor: pointer;
 }
@@ -85,28 +91,37 @@
   display: block;
   width: 100%;
   aspect-ratio: 16 / 9;
-  border: 1px solid rgba(255,255,255,.65);
-  border-radius: 7px;
+  border: 1px solid rgba(0,0,0,.5);
+  border-radius: 5px;
   background-size: cover;
   background-position: center;
-  box-shadow: 0 5px 14px rgba(0,0,0,.35);
+  box-shadow: 0 3px 8px rgba(0,0,0,.14);
   transition: transform .16s ease, border-color .16s ease;
 }
 
 .customArticleTitle {
   display: -webkit-box;
-  margin-top: 6px;
-  font-size: 10px;
-  line-height: 1.13;
-  font-weight: 800;
-  -webkit-line-clamp: 2;
+  margin-top: 5px;
+  font-size: 11.5px;
+  line-height: 1.14;
+  font-weight: 850;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
 .customArticleCard:hover .customArticleImage {
   transform: translateY(-2px);
-  border-color: #fff;
+  border-color: #111;
+}
+
+.customFocusMainBubble {
+  background: #ef4444 !important;
+  color: #111 !important;
+}
+
+.customFocusMainBubble strong {
+  font-size: clamp(22px, 2.2vw, 32px) !important;
 }
 
 .overviewSatellite {
@@ -118,45 +133,19 @@
 }
 
 @media (max-width: 1180px) {
-  .overviewSplit {
-    grid-template-columns: minmax(340px, 36%) minmax(0, 1fr);
-  }
-
-  .customTopicRow {
-    grid-template-columns: 92px minmax(0, 1fr);
-  }
-
-  .customTopicLabel {
-    font-size: 14px;
-  }
+  .overviewSplit { grid-template-columns: minmax(390px, 39%) minmax(0, 1fr); }
+  .customTopicRow { grid-template-columns: 100px minmax(0, 1fr); }
+  .customTopicLabelButton { font-size: 14px; }
+  .customArticleTitle { font-size: 10.5px; }
 }
 
 @media (max-width: 900px) {
-  .overviewSplit {
-    grid-template-columns: 300px minmax(0, 1fr);
-  }
-
-  .customTopicsPanel {
-    padding: 10px;
-  }
-
-  .customTopicsHeading strong {
-    display: none;
-  }
-
-  .customTopicRow {
-    grid-template-columns: 76px minmax(0, 1fr);
-    gap: 7px;
-  }
-
-  .customArticleRow {
-    gap: 6px;
-  }
-
-  .customArticleTitle {
-    font-size: 9px;
-  }
-
+  .overviewSplit { grid-template-columns: 340px minmax(0, 1fr); }
+  .customTopicsPanel { padding: 9px; }
+  .customTopicsHeading strong { display: none; }
+  .customTopicRow { grid-template-columns: 82px minmax(0, 1fr); gap: 6px; }
+  .customArticleRow { gap: 4px; }
+  .customArticleTitle { font-size: 9.5px; }
   .overviewSatellite {
     width: 52px !important;
     height: 52px !important;
