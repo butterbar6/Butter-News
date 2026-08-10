@@ -305,8 +305,24 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   return (
     <div className="visualizerShell">
       <header className="brandBanner">
-        <h1>BUTTER NEWS</h1>
-        <p>Sacramento - San Jose - San Francisco</p>
+        <div className="bannerSilhouette bannerSilhouetteLeft" aria-hidden="true">
+          <svg viewBox="0 0 260 90" role="img">
+            <path d="M12 76h236v7H12zM38 76V24h9v52zm175 0V24h9v52zM31 24h23v7H31zm175 0h23v7h-23z" />
+            <path d="M42 28C67 53 91 62 130 62s63-9 88-34v7c-25 25-50 34-88 34S67 60 42 35z" />
+            <path d="M46 31v45m17-29v29m18-18v18m18-10v10m18-6v6m26-6v6m18-10v10m18-18v18m18-29v29m17-45v45" stroke="currentColor" strokeWidth="3" fill="none" />
+          </svg>
+        </div>
+        <div className="brandCopy">
+          <h1>BUTTER NEWS</h1>
+          <p>Sacramento - San Jose - San Francisco</p>
+        </div>
+        <div className="bannerSilhouette bannerSilhouetteRight" aria-hidden="true">
+          <svg viewBox="0 0 260 90" role="img">
+            <path d="M8 78 50 54l25 10 45-49 26 27 22-16 84 52H8z" />
+            <path d="m97 40 23-25 26 27-10-5-7 10-9-10-8 9z" fill="#ffffff" />
+            <path d="m154 42 14-16 29 18-11-2-7 7-8-6-8 6z" fill="#ffffff" />
+          </svg>
+        </div>
       </header>
       {controls}
 
