@@ -124,7 +124,6 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
   const seed = hashString(`${metric}:${stories.map((story) => story.id).join("|")}`);
   const random = seededRandom(seed);
 
-  // Stable organic order, but keep angular spacing even so the pack remains predictable.
   for (let i = outerIndices.length - 1; i > 0; i -= 1) {
     const j = Math.floor(random() * (i + 1));
     [outerIndices[i], outerIndices[j]] = [outerIndices[j], outerIndices[i]];
@@ -137,15 +136,10 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
     const sizes = baseSizes.map((size) => size * scale);
     const radii = sizes.map((size) => size / 2);
     const centerRadius = radii[0];
-
-    // Start every outer bubble tangent to the center bubble.
     const distances = outerIndices.map((storyIndex) => centerRadius + radii[storyIndex] + bubbleGap);
 
-    // Only push bubbles outward when two surrounding bubbles physically collide.
-    // This minimizes the visible empty space around the center.
     for (let iteration = 0; iteration < 180; iteration += 1) {
       let changed = false;
-
       for (let a = 0; a < outerIndices.length; a += 1) {
         for (let b = a + 1; b < outerIndices.length; b += 1) {
           const indexA = outerIndices[a];
@@ -156,7 +150,6 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
           const by = Math.sin(angles[b]) * distances[b];
           const actual = Math.hypot(ax - bx, ay - by);
           const required = radii[indexA] + radii[indexB] + bubbleGap;
-
           if (actual < required - 0.05) {
             const push = (required - actual) * 0.58 + 0.2;
             distances[a] += push;
@@ -165,7 +158,6 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
           }
         }
       }
-
       if (!changed) break;
     }
 
@@ -177,7 +169,6 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
       };
     });
 
-    // Strict no-overlap validation for all main bubbles.
     let fits = true;
     for (let a = 0; a < positionsPx.length && fits; a += 1) {
       const pa = positionsPx[a];
@@ -189,7 +180,6 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
         fits = false;
         break;
       }
-
       for (let b = a + 1; b < positionsPx.length; b += 1) {
         const pb = positionsPx[b];
         const required = ra + radii[b] + bubbleGap;
@@ -203,7 +193,6 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
     return { sizes, positionsPx, fits };
   }
 
-  // First establish a definitely valid layout, then expand until the viewport is fully used.
   let low = 0.2;
   let lowCandidate = buildAtScale(low);
   while (!lowCandidate.fits && low > 0.03) {
@@ -213,7 +202,6 @@ function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: M
 
   let best = lowCandidate;
   let high = 4;
-
   for (let iteration = 0; iteration < 36; iteration += 1) {
     const mid = (low + high) / 2;
     const candidate = buildAtScale(mid);
@@ -277,8 +265,8 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   return (
     <div className="visualizerShell">
       <header className="brandBanner">
-        <h1>QUANTUM AMERICA</h1>
-        <p>The Answer to 1984 is 1776</p>
+        <h1>BUTTER NEWS</h1>
+        <p>Sacramento - San Jose - San Francisco</p>
       </header>
       {controls}
 
@@ -292,7 +280,6 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
             const bubbleColor = bubbleColors[storyIndex % bubbleColors.length];
             const topicFont = Math.max(10, Math.min(24, size * 0.1));
             const metricFont = Math.max(7, Math.min(12, size * 0.047));
-
             const dx = (position.left - 50) * 14.8;
             const dy = (position.top - 50) * 6.35;
             const outwardAngle = Math.atan2(dy, dx);
@@ -313,7 +300,8 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
                     const orbit = size / 2 + 14;
                     const left = size / 2 + Math.cos(angle) * orbit;
                     const top = size / 2 + Math.sin(angle) * orbit;
-                    return <span key={item.id} className="subBubble subBubbleDecorative" style={{ left, top, backgroundColor: bubbleColor }} />;
+                    const itemImage = item.image_url ?? fallbackImage(item.id);
+                    return <span key={item.id} className="subBubble subBubbleDecorative" style={{ left, top, backgroundImage: `url(${itemImage})` }} />;
                   })}
                 </div>
               </div>
@@ -354,7 +342,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
               <p className="articleMeta">{sourceName(openItem.sources)}{openItem.author ? ` · ${openItem.author}` : ""}{openItem.published_at ? ` · ${new Date(openItem.published_at).toLocaleString()}` : ""}</p>
               <h2>{openItem.title}</h2>
               <div className="articleText">
-                {openItem.content ? openItem.content.split("\n").filter(Boolean).map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p>This test article does not yet contain a full article body. When real article content is ingested into Supabase, it will appear here without redirecting away from Quantum America.</p>}
+                {openItem.content ? openItem.content.split("\n").filter(Boolean).map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p>This test article does not yet contain a full article body. When real article content is ingested into Supabase, it will appear here without redirecting away from Butter News.</p>}
               </div>
             </div>
           </article>
