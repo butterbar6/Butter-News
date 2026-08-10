@@ -32,7 +32,7 @@ main {
 .brandBanner {
   position: relative;
   flex: 0 0 auto;
-  min-height: 84px;
+  min-height: 92px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -40,7 +40,7 @@ main {
   color: #fff;
   background: #050505;
   border-bottom: 2px solid #111;
-  padding: 8px 210px 9px;
+  padding: 8px min(27vw, 420px) 9px;
   overflow: hidden;
   z-index: 5;
 }
@@ -77,50 +77,64 @@ main {
 
 .bannerSilhouette {
   position: absolute;
-  bottom: 0;
-  width: min(22vw, 260px);
-  height: 78px;
+  bottom: 2px;
+  width: min(28vw, 430px);
+  height: 85%;
+  min-height: 72px;
   color: #ffffff;
   pointer-events: none;
   opacity: .98;
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: contain;
 }
 
-.bannerSilhouette svg {
-  width: 100%;
-  height: 100%;
-  display: block;
-  fill: currentColor;
+.bannerSilhouette svg { display: none; }
+
+.bannerSilhouetteLeft {
+  left: 10px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 130'%3E%3Cg fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke-width='7' d='M18 112H502M78 112V25M442 112V25M62 25h32M426 25h32M69 38h18M433 38h18'/%3E%3Cpath stroke-width='4' d='M82 26C122 61 169 79 260 80c91-1 138-19 178-54M82 37c43 35 91 54 178 55 87-1 135-20 178-55'/%3E%3Cpath stroke-width='2.7' d='M95 45v67M118 59v53M142 69v43M166 76v36M190 82v30M214 86v26M238 89v23M282 89v23M306 86v26M330 82v30M354 76v36M378 69v43M402 59v53M425 45v67'/%3E%3Cpath stroke-width='3.2' d='M18 103c42-8 83-12 124-14M378 89c42 2 83 6 124 14'/%3E%3Cpath stroke-width='2' d='M79 48h12M79 61h12M79 74h12M79 87h12M429 48h12M429 61h12M429 74h12M429 87h12'/%3E%3C/g%3E%3Cpath fill='%23fff' d='M73 18h16v9H73zM431 18h16v9h-16zM73 108h16v8H73zM431 108h16v8h-16z'/%3E%3C/svg%3E");
 }
 
-.bannerSilhouetteLeft { left: 18px; }
-.bannerSilhouetteRight { right: 18px; }
+.bannerSilhouetteRight {
+  right: 10px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 130'%3E%3Cpath fill='%23fff' d='M5 117 62 91l32 8 43-30 28 10 65-69 29 33 21-14 32 37 23-18 37 36 22-8 74 41H5z'/%3E%3Cpath fill='%23050505' d='m193 49 37-39 29 33-16-7-9 12-10-11-11 13-10-8zM293 53l19-24 32 37-18-9-9 11-9-10-9 9zM365 66l17-18 37 36-19-8-8 10-10-10-9 8z'/%3E%3Cpath fill='none' stroke='%23050505' stroke-width='3' stroke-linecap='round' d='M35 112c42-14 69-11 104-26 34-15 52-29 78-51M247 108c35-16 58-24 84-47M330 108c28-14 51-23 75-35'/%3E%3Cpath fill='none' stroke='%23fff' stroke-width='2.5' stroke-linecap='round' d='m44 101 21-6 17 5m59-28 15-5 15 6m93-21 15-7 14 9m82 23 14-5 17 8'/%3E%3C/svg%3E");
+}
 
 .controlBar {
-  flex: 0 0 auto;
+  position: fixed;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  z-index: 60;
   display: flex;
   justify-content: center;
-  gap: 9px;
-  align-items: stretch;
-  padding: 7px 12px 6px;
-  overflow-x: auto;
-  overflow-y: hidden;
+  gap: 6px;
+  align-items: center;
+  padding: 4px;
+  border: 1px solid rgba(0,0,0,.18);
+  border-radius: 999px;
+  background: rgba(255,255,255,.94);
+  box-shadow: 0 5px 18px rgba(0,0,0,.12);
+  backdrop-filter: blur(6px);
 }
 
 .controlBar label {
   display: grid;
-  gap: 3px;
-  min-width: 170px;
-  padding: 6px 10px;
-  border: 1.5px solid #111;
+  gap: 1px;
+  min-width: 122px;
+  padding: 4px 8px;
+  border: 1px solid #111;
   border-radius: 999px;
-  background: rgba(255,255,255,.96);
+  background: #fff;
 }
 
 .controlBar span {
-  font-size: 9px;
+  font-size: 7px;
+  line-height: 1;
   text-transform: uppercase;
-  letter-spacing: .1em;
-  opacity: .58;
+  letter-spacing: .08em;
+  opacity: .55;
 }
 
 .controlBar select {
@@ -128,6 +142,8 @@ main {
   border: 0;
   outline: 0;
   background: transparent;
+  font-size: 11px;
+  line-height: 1.05;
   font-weight: 800;
   cursor: pointer;
 }
@@ -416,29 +432,31 @@ main {
 .errorBox p { margin-bottom: 0; opacity: .7; }
 
 @media (max-width: 1180px) {
-  .brandBanner { padding-left: 165px; padding-right: 165px; }
-  .bannerSilhouette { width: 190px; height: 68px; }
+  .brandBanner { padding-left: 190px; padding-right: 190px; }
+  .bannerSilhouette { width: 30vw; height: 82%; }
   .storyCluster { transform: translate(-50%, -50%) scale(.82); }
 }
 
 @media (max-width: 900px) {
-  .brandBanner { min-height: 72px; padding-left: 115px; padding-right: 115px; }
+  .brandBanner { min-height: 76px; padding-left: 130px; padding-right: 130px; }
   .brandBanner h1 { font-size: 32px; }
   .brandBanner p { font-size: 14px; }
-  .bannerSilhouette { width: 135px; height: 58px; }
-  .bannerSilhouetteLeft { left: 5px; }
-  .bannerSilhouetteRight { right: 5px; }
+  .bannerSilhouette { width: 145px; height: 78%; min-height: 56px; }
+  .bannerSilhouetteLeft { left: 3px; }
+  .bannerSilhouetteRight { right: 3px; }
   .storyCluster { transform: translate(-50%, -50%) scale(.7); }
   .focusScene { transform: scale(.77); }
 }
 
 @media (max-width: 650px) {
-  .brandBanner { min-height: 62px; padding: 6px 78px; }
+  .brandBanner { min-height: 66px; padding: 6px 82px; }
   .brandBanner h1 { font-size: 24px; -webkit-text-stroke-width: 1px; }
   .brandBanner p { font-size: 10px; }
-  .bannerSilhouette { width: 86px; height: 48px; }
-  .controlBar { justify-content: flex-start; gap: 6px; padding: 5px 5px 4px; }
-  .controlBar label { min-width: 140px; padding: 5px 8px; }
+  .bannerSilhouette { width: 90px; height: 75%; min-height: 45px; }
+  .controlBar { bottom: 6px; gap: 3px; padding: 3px; }
+  .controlBar label { min-width: 102px; padding: 3px 6px; }
+  .controlBar span { font-size: 6px; }
+  .controlBar select { font-size: 9px; }
   .storyCluster { transform: translate(-50%, -50%) scale(.5); }
   .subBubbleDecorative { width: 28px; height: 28px; margin-left: -14px; margin-top: -14px; }
   .focusScene { width: 100%; height: 620px; min-height: 620px; transform: scale(.58); }
