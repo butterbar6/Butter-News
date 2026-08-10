@@ -176,11 +176,12 @@ function makeRadialLayout(
   const centerX = safeWidth / 2;
   const centerY = safeHeight / 2;
   const edgeGap = 8;
-  const bubbleGap = 3;
+  const bubbleGap = 4;
+  const satelliteReserve = 82;
 
   if (stories.length === 0) return { positions: [], sizes: [] };
   if (stories.length === 1) {
-    const size = Math.min(safeWidth * 0.44, safeHeight * 0.74, 560);
+    const size = Math.min(safeWidth * 0.44, safeHeight * 0.66, 520);
     return { positions: [{ left: 50, top: 50 }], sizes: [size] };
   }
 
@@ -197,10 +198,11 @@ function makeRadialLayout(
   function buildAtScale(scale: number) {
     const sizes = baseSizes.map((size) => size * scale);
     const radii = sizes.map((size) => size / 2);
-    const centerRadius = radii[0];
-    const distances = outerIndices.map((storyIndex) => centerRadius + radii[storyIndex] + bubbleGap);
+    const clusterRadii = radii.map((radius) => radius + satelliteReserve);
+    const centerRadius = clusterRadii[0];
+    const distances = outerIndices.map((storyIndex) => centerRadius + clusterRadii[storyIndex] + bubbleGap);
 
-    for (let iteration = 0; iteration < 300; iteration += 1) {
+    for (let iteration = 0; iteration < 360; iteration += 1) {
       let changed = false;
       for (let a = 0; a < outerIndices.length; a += 1) {
         for (let b = a + 1; b < outerIndices.length; b += 1) {
@@ -211,7 +213,7 @@ function makeRadialLayout(
           const bx = Math.cos(angles[b]) * distances[b];
           const by = Math.sin(angles[b]) * distances[b];
           const actual = Math.hypot(ax - bx, ay - by);
-          const required = radii[indexA] + radii[indexB] + bubbleGap;
+          const required = clusterRadii[indexA] + clusterRadii[indexB] + bubbleGap;
           if (actual < required - 0.05) {
             const push = (required - actual) * 0.58 + 0.15;
             distances[a] += push;
@@ -234,14 +236,14 @@ function makeRadialLayout(
     let fits = true;
     for (let a = 0; a < positionsPx.length && fits; a += 1) {
       const pa = positionsPx[a];
-      const ra = radii[a];
+      const ra = clusterRadii[a];
       if (pa.x - ra < edgeGap || pa.x + ra > safeWidth - edgeGap || pa.y - ra < edgeGap || pa.y + ra > safeHeight - edgeGap) {
         fits = false;
         break;
       }
       for (let b = a + 1; b < positionsPx.length; b += 1) {
         const pb = positionsPx[b];
-        if (Math.hypot(pa.x - pb.x, pa.y - pb.y) < ra + radii[b] + bubbleGap - 0.05) {
+        if (Math.hypot(pa.x - pb.x, pa.y - pb.y) < ra + clusterRadii[b] + bubbleGap - 0.05) {
           fits = false;
           break;
         }
@@ -250,10 +252,10 @@ function makeRadialLayout(
     return { sizes, positionsPx, fits };
   }
 
-  let low = 0.12;
+  let low = 0.08;
   let best = buildAtScale(low);
   let high = 7;
-  for (let iteration = 0; iteration < 46; iteration += 1) {
+  for (let iteration = 0; iteration < 48; iteration += 1) {
     const mid = (low + high) / 2;
     const candidate = buildAtScale(mid);
     if (candidate.fits) {
@@ -276,7 +278,7 @@ function makeRadialLayout(
 function makeFocusLayout(total: number, availableWidth: number, availableHeight: number): FocusLayout {
   const count = Math.max(1, Math.min(total, 100));
   const minDimension = Math.max(360, Math.min(availableWidth, availableHeight));
-  const maxRadius = Math.max(135, minDimension / 2 - 34);
+  const maxRadius = Math.max(135, minDimension / 2 - 44);
 
   const ringCaps = [10, 16, 22, 26, 26];
   let ringCount = 1;
@@ -300,7 +302,7 @@ function makeFocusLayout(total: number, availableWidth: number, availableHeight:
     ringCount === 4 ? 185 : 150
   );
 
-  const firstRadius = Math.min(maxRadius, centerSize / 2 + bubbleSize / 2 + 12);
+  const firstRadius = Math.min(maxRadius, centerSize / 2 + bubbleSize / 2 + 14);
   const ringRadii = Array.from({ length: ringCount }, (_, ringIndex) => {
     if (ringCount === 1) return Math.min(maxRadius, Math.max(firstRadius, maxRadius * 0.72));
     return firstRadius + ((maxRadius - firstRadius) * ringIndex) / Math.max(ringCount - 1, 1);
@@ -429,7 +431,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
                       const angle = storyIndex === 0
                         ? -Math.PI / 2 + (itemIndex / count) * Math.PI * 2
                         : outwardAngle - Math.PI / 2 + ((itemIndex + 0.5) / count) * Math.PI;
-                      const orbit = size / 2 + 34;
+                      const orbit = size / 2 + 42;
                       const left = size / 2 + Math.cos(angle) * orbit;
                       const top = size / 2 + Math.sin(angle) * orbit;
                       const itemImage = item.image_url ?? fallbackImage(item.id);
@@ -479,7 +481,8 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
               const placement = focusLayout.placements[index];
               if (!placement) return null;
               const itemImage = item.image_url ?? fallbackImage(item.id);
-              const compact = focusLayout.bubbleSize < 60;
+              const titleWidth = Math.max(72, Math.min(132, focusLayout.bubbleSize * 1.65));
+              const titleFont = focusLayout.bubbleSize < 50 ? 6.5 : focusLayout.bubbleSize < 70 ? 7.5 : 9;
               return (
                 <button
                   key={item.id}
@@ -493,13 +496,18 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
                     marginTop: -focusLayout.bubbleSize / 2,
                     left: `calc(50% + ${placement.x}px)`,
                     top: `calc(50% + ${placement.y}px)`,
-                    padding: compact ? 3 : 10,
+                    padding: 3,
                     backgroundImage: `linear-gradient(rgba(0,0,0,.24), rgba(0,0,0,.56)), url(${itemImage})`,
                   }}
-                  aria-label={`Read article: ${item.title}`}
+                  aria-label={`Read article ${index + 1}: ${item.title}`}
                 >
-                  {!compact && <span className={styles.focusArticleTitle}>{item.title}</span>}
-                  <span className={styles.focusArticleLabel}>{compact ? `${index + 1}` : "ARTICLE"}</span>
+                  <span className={styles.focusArticleNumber}>{index + 1}</span>
+                  <span
+                    className={styles.focusArticleTitle}
+                    style={{ width: titleWidth, fontSize: titleFont }}
+                  >
+                    {item.title}
+                  </span>
                 </button>
               );
             })}
