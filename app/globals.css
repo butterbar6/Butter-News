@@ -11,15 +11,7 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 8% 18%, #111 0 1.35px, transparent 1.9px),
-    radial-gradient(circle at 26% 68%, #111 0 1.35px, transparent 1.9px),
-    radial-gradient(circle at 44% 30%, #111 0 1.35px, transparent 1.9px),
-    radial-gradient(circle at 68% 70%, #111 0 1.35px, transparent 1.9px),
-    radial-gradient(circle at 86% 24%, #111 0 1.35px, transparent 1.9px),
-    radial-gradient(circle at 92% 82%, #111 0 1.35px, transparent 1.9px),
-    #ffffff;
-  background-size: 150px 150px, 180px 180px, 210px 210px, 170px 170px, 230px 230px, 190px 190px;
+  background: #ffffff;
 }
 
 button, select { font: inherit; }
@@ -38,13 +30,24 @@ main {
 }
 
 .brandBanner {
+  position: relative;
   flex: 0 0 auto;
+  min-height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  color: #111;
-  background: linear-gradient(180deg, #ffd76a 0%, #f4bd39 100%);
+  color: #fff;
+  background: #050505;
   border-bottom: 2px solid #111;
-  padding: 7px 16px 8px;
+  padding: 8px 210px 9px;
+  overflow: hidden;
   z-index: 5;
+}
+
+.brandCopy {
+  position: relative;
+  z-index: 2;
 }
 
 .brandBanner h1 {
@@ -55,6 +58,10 @@ main {
   letter-spacing: .02em;
   font-weight: 900;
   font-style: italic;
+  color: #f4bd39;
+  -webkit-text-stroke: 1.35px #ffffff;
+  paint-order: stroke fill;
+  text-shadow: 0 1px 0 #fff;
 }
 
 .brandBanner p {
@@ -65,7 +72,28 @@ main {
   font-style: normal;
   font-weight: 600;
   letter-spacing: .03em;
+  color: #ffffff;
 }
+
+.bannerSilhouette {
+  position: absolute;
+  bottom: 0;
+  width: min(22vw, 260px);
+  height: 78px;
+  color: #ffffff;
+  pointer-events: none;
+  opacity: .98;
+}
+
+.bannerSilhouette svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  fill: currentColor;
+}
+
+.bannerSilhouetteLeft { left: 18px; }
+.bannerSilhouetteRight { right: 18px; }
 
 .controlBar {
   flex: 0 0 auto;
@@ -388,20 +416,27 @@ main {
 .errorBox p { margin-bottom: 0; opacity: .7; }
 
 @media (max-width: 1180px) {
+  .brandBanner { padding-left: 165px; padding-right: 165px; }
+  .bannerSilhouette { width: 190px; height: 68px; }
   .storyCluster { transform: translate(-50%, -50%) scale(.82); }
 }
 
 @media (max-width: 900px) {
+  .brandBanner { min-height: 72px; padding-left: 115px; padding-right: 115px; }
   .brandBanner h1 { font-size: 32px; }
   .brandBanner p { font-size: 14px; }
+  .bannerSilhouette { width: 135px; height: 58px; }
+  .bannerSilhouetteLeft { left: 5px; }
+  .bannerSilhouetteRight { right: 5px; }
   .storyCluster { transform: translate(-50%, -50%) scale(.7); }
   .focusScene { transform: scale(.77); }
 }
 
 @media (max-width: 650px) {
-  .brandBanner { padding: 6px 8px; }
-  .brandBanner h1 { font-size: 24px; }
-  .brandBanner p { font-size: 11px; }
+  .brandBanner { min-height: 62px; padding: 6px 78px; }
+  .brandBanner h1 { font-size: 24px; -webkit-text-stroke-width: 1px; }
+  .brandBanner p { font-size: 10px; }
+  .bannerSilhouette { width: 86px; height: 48px; }
   .controlBar { justify-content: flex-start; gap: 6px; padding: 5px 5px 4px; }
   .controlBar label { min-width: 140px; padding: 5px 8px; }
   .storyCluster { transform: translate(-50%, -50%) scale(.5); }
