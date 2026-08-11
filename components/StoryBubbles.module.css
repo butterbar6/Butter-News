@@ -52,7 +52,7 @@
   top: calc(100% + 4px);
   transform: translateX(-50%);
   width: 82px;
-  border: 1px solid rgba(0,0,0,.28);
+  border: 1px solid rgba(0,0,0,.35);
   border-radius: 4px;
   padding: 2px 3px;
   font-size: 7.5px;
@@ -70,8 +70,8 @@
   box-shadow: 0 1px 4px rgba(0,0,0,.08);
 }
 
-.unreadLabel { color: #fff !important; background: #c40000 !important; }
-.viewedLabel { color: #fff !important; background: #777 !important; }
+.unreadLabel { color: #111 !important; background: #dfff00 !important; }
+.viewedLabel { color: #111 !important; background: #fff !important; }
 
 .focusArticleNumber {
   position: relative;
@@ -91,7 +91,7 @@
   left: 50%;
   top: calc(100% + 5px);
   transform: translateX(-50%);
-  border: 1px solid rgba(0,0,0,.28);
+  border: 1px solid rgba(0,0,0,.35);
   border-radius: 5px;
   padding: 3px 4px;
   line-height: 1.12 !important;
