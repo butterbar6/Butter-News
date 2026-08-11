@@ -29,7 +29,7 @@ export type BubbleStory = {
 
 type MetricKey = "exposure_score" | "momentum" | "article_count" | "source_count" | "importance_score";
 type PackedPosition = { left: number; top: number };
-type RadialLayout = { positions: PackedPosition[]; sizes: number[] };
+type RadialLayout = { positions: PackedPosition[]; sizes: number[]; satelliteAngles: number[][] };
 type FocusPlacement = { x: number; y: number; ring: number };
 type FocusLayout = { placements: FocusPlacement[]; ringRadii: number[]; bubbleSize: number; centerSize: number };
 
@@ -41,7 +41,6 @@ const metricLabels: Record<MetricKey, string> = {
   importance_score: "Importance",
 };
 
-// Preserved prototype data for the saved "custom sidebar" feature.
 function customItem(id: string, title: string, seed: string, content: string): Item {
   return { id, title, url: "#", content, author: "Butter News Demo", published_at: null, image_url: `https://picsum.photos/seed/${seed}/500/300`, sources: { name: "Custom Feed" } };
 }
@@ -100,98 +99,200 @@ function topicForSize(title: string, size: number) {
 
 function hashString(value: string) { let hash = 2166136261; for (let i = 0; i < value.length; i += 1) { hash ^= value.charCodeAt(i); hash = Math.imul(hash, 16777619); } return hash >>> 0; }
 function seededRandom(seed: number) { let state = seed || 1; return () => { state = (Math.imul(state, 1664525) + 1013904223) >>> 0; return state / 4294967296; }; }
+function normalizeAngle(angle: number) { const full = Math.PI * 2; return ((angle % full) + full) % full; }
+
+function circleHitsRect(cx: number, cy: number, radius: number, left: number, top: number, width: number, height: number) {
+  const nearestX = Math.max(left, Math.min(cx, left + width));
+  const nearestY = Math.max(top, Math.min(cy, top + height));
+  return Math.hypot(cx - nearestX, cy - nearestY) < radius;
+}
+
+function rectsOverlap(a: { left: number; top: number; width: number; height: number }, b: { left: number; top: number; width: number; height: number }, gap = 2) {
+  return !(a.left + a.width + gap <= b.left || b.left + b.width + gap <= a.left || a.top + a.height + gap <= b.top || b.top + b.height + gap <= a.top);
+}
+
+function centerGapAngles(outerAngles: number[]) {
+  if (!outerAngles.length) return [-Math.PI / 2, Math.PI / 6, (5 * Math.PI) / 6];
+  const sorted = outerAngles.map(normalizeAngle).sort((a, b) => a - b);
+  const gaps = sorted.map((angle, index) => {
+    const next = index === sorted.length - 1 ? sorted[0] + Math.PI * 2 : sorted[index + 1];
+    return { size: next - angle, mid: normalizeAngle(angle + (next - angle) / 2) };
+  }).sort((a, b) => b.size - a.size);
+  const chosen = gaps.slice(0, 3).map((gap) => gap.mid);
+  while (chosen.length < 3) chosen.push(normalizeAngle(chosen[0] + chosen.length * (Math.PI * 2 / 3)));
+  return chosen;
+}
 
 function makeRadialLayout(stories: BubbleStory[], baseSizes: number[], metric: MetricKey, width: number, height: number): RadialLayout {
-  const safeWidth = Math.max(520, width - 24);
-  const safeHeight = Math.max(390, height - 24);
+  const safeWidth = Math.max(520, width - 12);
+  const safeHeight = Math.max(380, height - 12);
   const centerX = safeWidth / 2;
   const centerY = safeHeight / 2;
-  const edgeGap = 12;
-  const bubbleGap = 6;
-  const satelliteReserve = 62;
+  const edgeGap = 8;
+  const bubbleGap = 3;
+  const satelliteRadius = 22;
+  const labelWidth = 82;
+  const labelHeight = 22;
+  const labelGap = 4;
 
-  if (stories.length === 0) return { positions: [], sizes: [] };
+  if (stories.length === 0) return { positions: [], sizes: [], satelliteAngles: [] };
   if (stories.length === 1) {
-    const size = Math.min(safeWidth * 0.44, safeHeight * 0.62, 500);
-    return { positions: [{ left: 50, top: 50 }], sizes: [size] };
+    const size = Math.min(safeWidth * 0.48, safeHeight * 0.68, 520);
+    return { positions: [{ left: 50, top: 50 }], sizes: [size], satelliteAngles: [[-Math.PI / 2, Math.PI / 6, (5 * Math.PI) / 6]] };
   }
 
   const outerIndices = Array.from({ length: stories.length - 1 }, (_, i) => i + 1);
   const random = seededRandom(hashString(`${metric}:${stories.map((story) => story.id).join("|")}`));
   for (let i = outerIndices.length - 1; i > 0; i -= 1) { const j = Math.floor(random() * (i + 1)); [outerIndices[i], outerIndices[j]] = [outerIndices[j], outerIndices[i]]; }
   const rotation = random() * Math.PI * 2;
-  const angles = outerIndices.map((_, slot) => rotation + (slot / outerIndices.length) * Math.PI * 2);
+  const outerAngles = outerIndices.map((_, slot) => rotation + (slot / outerIndices.length) * Math.PI * 2);
+  const centerAngles = centerGapAngles(outerAngles);
 
   function buildAtScale(scale: number) {
     const sizes = baseSizes.map((size) => size * scale);
     const radii = sizes.map((size) => size / 2);
-    const collisionRadii = radii.map((radius, index) => radius + (index === 0 ? 54 : 42));
-    const centerRadius = collisionRadii[0];
-    const distances = outerIndices.map((storyIndex) => centerRadius + collisionRadii[storyIndex] + bubbleGap);
+    const distances = outerIndices.map((storyIndex) => radii[0] + radii[storyIndex] + bubbleGap);
 
-    for (let iteration = 0; iteration < 300; iteration += 1) {
+    for (let iteration = 0; iteration < 260; iteration += 1) {
       let changed = false;
       for (let a = 0; a < outerIndices.length; a += 1) {
         for (let b = a + 1; b < outerIndices.length; b += 1) {
           const indexA = outerIndices[a], indexB = outerIndices[b];
-          const ax = Math.cos(angles[a]) * distances[a], ay = Math.sin(angles[a]) * distances[a];
-          const bx = Math.cos(angles[b]) * distances[b], by = Math.sin(angles[b]) * distances[b];
+          const ax = Math.cos(outerAngles[a]) * distances[a], ay = Math.sin(outerAngles[a]) * distances[a];
+          const bx = Math.cos(outerAngles[b]) * distances[b], by = Math.sin(outerAngles[b]) * distances[b];
           const actual = Math.hypot(ax - bx, ay - by);
-          const required = collisionRadii[indexA] + collisionRadii[indexB] + bubbleGap;
-          if (actual < required - 0.05) { const push = (required - actual) * 0.58 + 0.15; distances[a] += push; distances[b] += push; changed = true; }
+          const required = radii[indexA] + radii[indexB] + bubbleGap;
+          if (actual < required - 0.05) {
+            const push = (required - actual) * 0.58 + 0.1;
+            distances[a] += push;
+            distances[b] += push;
+            changed = true;
+          }
         }
       }
       if (!changed) break;
     }
 
     const positionsPx = stories.map(() => ({ x: centerX, y: centerY }));
-    outerIndices.forEach((storyIndex, slot) => { positionsPx[storyIndex] = { x: centerX + Math.cos(angles[slot]) * distances[slot], y: centerY + Math.sin(angles[slot]) * distances[slot] }; });
+    outerIndices.forEach((storyIndex, slot) => { positionsPx[storyIndex] = { x: centerX + Math.cos(outerAngles[slot]) * distances[slot], y: centerY + Math.sin(outerAngles[slot]) * distances[slot] }; });
+
+    const satelliteAngles = stories.map((_, storyIndex) => {
+      if (storyIndex === 0) return centerAngles;
+      const slot = outerIndices.indexOf(storyIndex);
+      const base = outerAngles[Math.max(0, slot)];
+      return [base - 0.58, base, base + 0.58];
+    });
 
     let fits = true;
-    for (let a = 0; a < positionsPx.length && fits; a += 1) {
-      const pa = positionsPx[a];
-      const visualRadius = radii[a] + satelliteReserve;
-      if (pa.x - visualRadius < edgeGap || pa.x + visualRadius > safeWidth - edgeGap || pa.y - visualRadius < edgeGap || pa.y + visualRadius > safeHeight - edgeGap) { fits = false; break; }
-      for (let b = a + 1; b < positionsPx.length; b += 1) {
-        const pb = positionsPx[b];
-        if (Math.hypot(pa.x - pb.x, pa.y - pb.y) < collisionRadii[a] + collisionRadii[b] + bubbleGap - 0.05) { fits = false; break; }
+    for (let i = 0; i < positionsPx.length && fits; i += 1) {
+      const p = positionsPx[i], r = radii[i];
+      if (p.x - r < edgeGap || p.x + r > safeWidth - edgeGap || p.y - r < edgeGap || p.y + r > safeHeight - edgeGap) fits = false;
+      for (let j = i + 1; j < positionsPx.length && fits; j += 1) {
+        if (Math.hypot(p.x - positionsPx[j].x, p.y - positionsPx[j].y) < r + radii[j] + bubbleGap - 0.05) fits = false;
       }
     }
-    return { sizes, positionsPx, fits };
+
+    const satelliteVisuals: { cx: number; cy: number; label: { left: number; top: number; width: number; height: number }; parent: number }[] = [];
+    for (let storyIndex = 0; storyIndex < stories.length && fits; storyIndex += 1) {
+      const parent = positionsPx[storyIndex];
+      const orbit = radii[storyIndex] + 27;
+      for (const angle of satelliteAngles[storyIndex]) {
+        const cx = parent.x + Math.cos(angle) * orbit;
+        const cy = parent.y + Math.sin(angle) * orbit;
+        const label = { left: cx - labelWidth / 2, top: cy + satelliteRadius + labelGap, width: labelWidth, height: labelHeight };
+        if (cx - satelliteRadius < edgeGap || cx + satelliteRadius > safeWidth - edgeGap || cy - satelliteRadius < edgeGap || label.left < edgeGap || label.left + label.width > safeWidth - edgeGap || label.top + label.height > safeHeight - edgeGap) { fits = false; break; }
+        for (let other = 0; other < stories.length && fits; other += 1) {
+          if (other === storyIndex) continue;
+          const op = positionsPx[other];
+          if (Math.hypot(cx - op.x, cy - op.y) < satelliteRadius + radii[other] + 2) fits = false;
+          if (circleHitsRect(op.x, op.y, radii[other] + 2, label.left, label.top, label.width, label.height)) fits = false;
+        }
+        for (const prior of satelliteVisuals) {
+          if (!fits) break;
+          if (Math.hypot(cx - prior.cx, cy - prior.cy) < satelliteRadius * 2 + 2) fits = false;
+          if (rectsOverlap(label, prior.label, 2)) fits = false;
+          if (circleHitsRect(cx, cy, satelliteRadius + 1, prior.label.left, prior.label.top, prior.label.width, prior.label.height)) fits = false;
+          if (circleHitsRect(prior.cx, prior.cy, satelliteRadius + 1, label.left, label.top, label.width, label.height)) fits = false;
+        }
+        satelliteVisuals.push({ cx, cy, label, parent: storyIndex });
+      }
+    }
+
+    return { sizes, positionsPx, satelliteAngles, fits };
   }
 
   let low = 0.08;
   let best = buildAtScale(low);
   let high = 7;
-  for (let iteration = 0; iteration < 46; iteration += 1) { const mid = (low + high) / 2; const candidate = buildAtScale(mid); if (candidate.fits) { best = candidate; low = mid; } else high = mid; }
+  for (let iteration = 0; iteration < 46; iteration += 1) {
+    const mid = (low + high) / 2;
+    const candidate = buildAtScale(mid);
+    if (candidate.fits) { best = candidate; low = mid; } else high = mid;
+  }
 
-  return { sizes: best.sizes.map((size) => Math.round(size)), positions: best.positionsPx.map((position) => ({ left: (position.x / safeWidth) * 100, top: (position.y / safeHeight) * 100 })) };
+  return {
+    sizes: best.sizes.map((size) => Math.round(size)),
+    positions: best.positionsPx.map((position) => ({ left: (position.x / safeWidth) * 100, top: (position.y / safeHeight) * 100 })),
+    satelliteAngles: best.satelliteAngles,
+  };
+}
+
+function buildFocusCandidate(count: number, availableWidth: number, availableHeight: number, bubbleSize: number) {
+  const titleWidth = Math.max(44, Math.min(122, bubbleSize * 1.55));
+  const titleHeight = bubbleSize < 36 ? 16 : bubbleSize < 54 ? 20 : 24;
+  const footprintWidth = Math.max(bubbleSize, titleWidth) + 6;
+  const footprintHeight = bubbleSize + titleHeight + 9;
+  const centerSize = Math.max(100, Math.min(300, bubbleSize * (count <= 10 ? 2.55 : count <= 30 ? 2.35 : count <= 60 ? 2.1 : 1.9)));
+  const maxRadius = Math.min(availableWidth / 2 - footprintWidth / 2 - 12, availableHeight / 2 - footprintHeight / 2 - 12);
+  const firstRadius = centerSize / 2 + footprintHeight / 2 + 8;
+  const step = footprintHeight + 5;
+  if (maxRadius < firstRadius) return null;
+
+  const ringRadii: number[] = [];
+  const ringCaps: number[] = [];
+  for (let radius = firstRadius; radius <= maxRadius + 0.5; radius += step) {
+    const circumferenceCapacity = Math.floor((Math.PI * 2 * radius) / footprintWidth * 0.9);
+    const cap = Math.max(6, circumferenceCapacity);
+    ringRadii.push(radius);
+    ringCaps.push(cap);
+  }
+  const totalCapacity = ringCaps.reduce((sum, value) => sum + value, 0);
+  if (totalCapacity < count) return null;
+  return { ringRadii, ringCaps, centerSize };
 }
 
 function makeFocusLayout(total: number, availableWidth: number, availableHeight: number): FocusLayout {
   const count = Math.max(1, Math.min(total, 100));
-  const ringCaps = [10, 16, 22, 26, 26];
-  let ringCount = 1, capacity = ringCaps[0];
-  while (capacity < count && ringCount < ringCaps.length) { capacity += ringCaps[ringCount]; ringCount += 1; }
+  let low = 20;
+  let high = 124;
+  let bestSize = low;
+  let best = buildFocusCandidate(count, availableWidth, availableHeight, low);
 
-  const bubbleSize = Math.max(32, Math.min(122, ringCount === 1 ? 122 : ringCount === 2 ? 90 : ringCount === 3 ? 66 : ringCount === 4 ? 50 : 38));
-  const centerSize = Math.max(140, ringCount === 1 ? 310 : ringCount === 2 ? 260 : ringCount === 3 ? 215 : ringCount === 4 ? 180 : 145);
-  const horizontalReserve = bubbleSize / 2 + Math.max(42, bubbleSize * 0.82) + 14;
-  const verticalReserve = bubbleSize / 2 + 48;
-  const maxRadiusX = Math.max(110, availableWidth / 2 - horizontalReserve);
-  const maxRadiusY = Math.max(110, availableHeight / 2 - verticalReserve);
-  const maxRadius = Math.max(110, Math.min(maxRadiusX, maxRadiusY));
-  const firstRadius = Math.min(maxRadius, centerSize / 2 + bubbleSize / 2 + 12);
-  const ringRadii = Array.from({ length: ringCount }, (_, ringIndex) => ringCount === 1 ? Math.min(maxRadius, Math.max(firstRadius, maxRadius * 0.72)) : firstRadius + ((maxRadius - firstRadius) * ringIndex) / Math.max(ringCount - 1, 1));
+  for (let iteration = 0; iteration < 34; iteration += 1) {
+    const mid = (low + high) / 2;
+    const candidate = buildFocusCandidate(count, availableWidth, availableHeight, mid);
+    if (candidate) { best = candidate; bestSize = mid; low = mid; } else high = mid;
+  }
+
+  if (!best) {
+    bestSize = 18;
+    best = buildFocusCandidate(count, availableWidth, availableHeight, bestSize) ?? { ringRadii: [Math.min(availableWidth, availableHeight) * 0.32], ringCaps: [count], centerSize: 92 };
+  }
 
   const placements: FocusPlacement[] = [];
   let itemIndex = 0;
-  for (let ring = 0; ring < ringCount && itemIndex < count; ring += 1) {
-    const ringItems = Math.min(ringCaps[ring], count - itemIndex);
+  for (let ring = 0; ring < best.ringRadii.length && itemIndex < count; ring += 1) {
+    const remaining = count - itemIndex;
+    const ringItems = Math.min(best.ringCaps[ring], remaining);
     const rotation = -Math.PI / 2 + (ring % 2) * (Math.PI / Math.max(ringItems, 1));
-    for (let slot = 0; slot < ringItems; slot += 1) { const angle = rotation + (slot / Math.max(ringItems, 1)) * Math.PI * 2; placements.push({ x: Math.cos(angle) * ringRadii[ring], y: Math.sin(angle) * ringRadii[ring], ring }); itemIndex += 1; }
+    for (let slot = 0; slot < ringItems; slot += 1) {
+      const angle = rotation + (slot / ringItems) * Math.PI * 2;
+      placements.push({ x: Math.cos(angle) * best.ringRadii[ring], y: Math.sin(angle) * best.ringRadii[ring], ring });
+      itemIndex += 1;
+    }
   }
-  return { placements, ringRadii, bubbleSize, centerSize };
+
+  return { placements, ringRadii: best.ringRadii.slice(0, Math.max(1, placements.length ? placements[placements.length - 1].ring + 1 : 1)), bubbleSize: Math.floor(bestSize), centerSize: Math.floor(best.centerSize) };
 }
 
 export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
@@ -203,7 +304,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   const [focusLevel, setFocusLevel] = useState(1);
   const [viewport, setViewport] = useState({ width: 1480, height: 640 });
 
-  useEffect(() => { const measure = () => setViewport({ width: window.innerWidth, height: Math.max(390, window.innerHeight - 112) }); measure(); window.addEventListener("resize", measure); return () => window.removeEventListener("resize", measure); }, []);
+  useEffect(() => { const measure = () => setViewport({ width: window.innerWidth, height: Math.max(380, window.innerHeight - 112) }); measure(); window.addEventListener("resize", measure); return () => window.removeEventListener("resize", measure); }, []);
 
   function openArticle(item: Item) { setViewedArticleIds((current) => { const next = new Set(current); next.add(item.id); return next; }); setOpenItem(item); }
 
@@ -221,7 +322,7 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
   const visibleFocusCount = Math.min(allFocusItems.length, 10 + (focusLevel - 1) * 10);
   const focusItems = allFocusItems.slice(0, visibleFocusCount);
   const focusTitle = selectedStory ? shortTopic(selectedStory.title) : "";
-  const focusLayout = makeFocusLayout(focusItems.length, stageWidth * 0.95, viewport.height * 0.96);
+  const focusLayout = makeFocusLayout(focusItems.length, stageWidth * 0.97, viewport.height * 0.97);
   const stageStyle = articlePanelWidth ? { marginLeft: articlePanelWidth, width: `calc(100% - ${articlePanelWidth}px)` } : undefined;
 
   return (
@@ -235,23 +336,20 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
             {displayed.map((story, storyIndex) => {
               const value = metricValue(story, metric), size = layout.sizes[storyIndex], position = layout.positions[storyIndex];
               const items = flattenItems(story).slice(0, 3);
-              const topicFont = Math.max(16, Math.min(38, size * 0.16));
+              const topicFont = Math.max(16, Math.min(40, size * 0.17));
               const metricFont = Math.max(8, Math.min(13, size * 0.052));
-              const dx = (position.left - 50) * stageWidth / 100, dy = (position.top - 50) * viewport.height / 100;
-              const outwardAngle = storyIndex === 0 ? -Math.PI / 2 : Math.atan2(dy, dx);
               const mainImage = storyImage(story);
 
               return (
                 <div key={story.id} className="storyCluster overviewCluster" style={{ left: `${position.left}%`, top: `${position.top}%`, width: size, height: size }}>
-                  <button type="button" className={`storyBubble mainBubbleButton ${styles.photoMainBubble}`} onClick={() => { setSelectedStoryId(story.id); setFocusLevel(1); }} aria-label={`Open story: ${story.title}`} style={{ width: size, height: size, backgroundImage: `url(${mainImage})`, padding: Math.max(6, size * 0.06) }}>
+                  <button type="button" className={`storyBubble mainBubbleButton ${styles.photoMainBubble}`} onClick={() => { setSelectedStoryId(story.id); setFocusLevel(1); }} aria-label={`Open story: ${story.title}`} style={{ width: size, height: size, backgroundImage: `url(${mainImage})`, padding: Math.max(6, size * 0.055) }}>
                     <strong className={styles.mainTopicText} style={{ fontSize: topicFont }}>{topicForSize(story.title, size)}</strong>
                     <span className={`bubbleMetric ${styles.mainMetricText}`} style={{ fontSize: metricFont }}>{metricLabels[metric]} {value}</span>
                   </button>
                   <div className="decorativeOrbit">
                     {items.map((item, itemIndex) => {
-                      const count = Math.max(items.length, 1);
-                      const angle = storyIndex === 0 ? -Math.PI / 2 + (itemIndex / count) * Math.PI * 2 : outwardAngle - 0.72 + (itemIndex / Math.max(count - 1, 1)) * 1.44;
-                      const orbit = size / 2 + 25, left = size / 2 + Math.cos(angle) * orbit, top = size / 2 + Math.sin(angle) * orbit;
+                      const angle = layout.satelliteAngles[storyIndex]?.[itemIndex] ?? (-Math.PI / 2 + itemIndex * Math.PI * 2 / 3);
+                      const orbit = size / 2 + 27, left = size / 2 + Math.cos(angle) * orbit, top = size / 2 + Math.sin(angle) * orbit;
                       const itemImage = item.image_url ?? fallbackImage(item.id), viewed = viewedArticleIds.has(item.id);
                       return <button key={item.id} type="button" className={`subBubble subBubbleDecorative ${styles.overviewSatellite} ${styles.clickableOverviewSatellite}`} style={{ left, top, backgroundImage: `url(${itemImage})`, opacity: 1, filter: "none" }} onClick={(event) => { event.stopPropagation(); openArticle(item); }} aria-label={`Read article: ${item.title}`}><span className={`${styles.satelliteLabel} ${viewed ? styles.viewedLabel : styles.unreadLabel}`}>{item.title}</span></button>;
                     })}
@@ -264,16 +362,16 @@ export default function StoryBubbles({ stories }: { stories: BubbleStory[] }) {
       ) : (
         <section className="bubbleStage focusView" aria-label="Selected topic with related articles" style={stageStyle}>
           <button className="backButton" onClick={() => { setSelectedStoryId(null); setOpenItem(null); setFocusLevel(1); }}>← All stories</button>
-          <div className="focusScene" style={{ width: Math.max(500, stageWidth * 0.95), height: "calc(100svh - 118px)", minHeight: 0 }}>
+          <div className="focusScene" style={{ width: Math.max(500, stageWidth * 0.97), height: "calc(100svh - 116px)", minHeight: 0 }}>
             {focusLayout.ringRadii.map((radius, ringIndex) => <div key={ringIndex} className="focusOrbitRing" style={{ width: radius * 2, height: radius * 2 }} />)}
             <button type="button" className={`storyBubble focusMainBubble ${styles.photoMainBubble}`} style={{ backgroundImage: `url(${storyImage(selectedStory)})`, width: focusLayout.centerSize, height: focusLayout.centerSize }} onClick={() => setFocusLevel((level) => Math.min(level + 1, 10))} aria-label="Show more related articles">
-              <strong className={styles.focusMainTitle}>{focusTitle}</strong>
+              <strong className={styles.focusMainTitle} style={{ fontSize: Math.max(24, Math.min(50, focusLayout.centerSize * 0.17)) }}>{focusTitle}</strong>
               <span className={`bubbleMetric ${styles.mainMetricText}`}>{metricLabels[metric]} {metricValue(selectedStory, metric)}</span>
               <span className={styles.moreHint}>{visibleFocusCount < allFocusItems.length ? `Click for more · ${visibleFocusCount}/${allFocusItems.length}` : `${allFocusItems.length} articles shown`}</span>
             </button>
             {focusItems.map((item, index) => {
               const placement = focusLayout.placements[index]; if (!placement) return null;
-              const itemImage = item.image_url ?? fallbackImage(item.id), titleWidth = Math.max(72, Math.min(132, focusLayout.bubbleSize * 1.65)), titleFont = focusLayout.bubbleSize < 50 ? 6.5 : focusLayout.bubbleSize < 70 ? 7.5 : 9, viewed = viewedArticleIds.has(item.id);
+              const itemImage = item.image_url ?? fallbackImage(item.id), titleWidth = Math.max(44, Math.min(122, focusLayout.bubbleSize * 1.55)), titleFont = focusLayout.bubbleSize < 36 ? 5.5 : focusLayout.bubbleSize < 54 ? 6.5 : focusLayout.bubbleSize < 72 ? 7.5 : 9, viewed = viewedArticleIds.has(item.id);
               return <button key={item.id} type="button" className="subBubble focusSubBubble" onClick={() => openArticle(item)} style={{ width: focusLayout.bubbleSize, height: focusLayout.bubbleSize, marginLeft: -focusLayout.bubbleSize / 2, marginTop: -focusLayout.bubbleSize / 2, left: `calc(50% + ${placement.x}px)`, top: `calc(50% + ${placement.y}px)`, padding: 3, backgroundImage: `url(${itemImage})`, opacity: 1, filter: "none" }} aria-label={`Read article ${index + 1}: ${item.title}`}><span className={styles.focusArticleNumber}>{index + 1}</span><span className={`${styles.focusArticleTitle} ${viewed ? styles.viewedLabel : styles.unreadLabel}`} style={{ width: titleWidth, fontSize: titleFont }}>{item.title}</span></button>;
             })}
           </div>
