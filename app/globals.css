@@ -103,7 +103,6 @@ main {
 @media (max-width: 1180px) {
   .brandBanner { padding-left: 205px; padding-right: 205px; }
   .bannerSilhouette { width: 35vw; }
-  .storyCluster { transform: translate(-50%, -50%) scale(.82); }
 }
 
 @media (max-width: 900px) {
@@ -111,8 +110,6 @@ main {
   .brandBanner h1 { font-size: 32px; }
   .brandBanner p { font-size: 14px; }
   .bannerSilhouette { width: 34vw; min-height: 68px; }
-  .storyCluster { transform: translate(-50%, -50%) scale(.7); }
-  .focusScene { transform: scale(.77); }
   .articleModalBackdrop.articleReaderDock { top: 80px; }
 }
 
@@ -125,9 +122,8 @@ main {
   .controlBar label { min-width: 102px; padding: 3px 6px; }
   .controlBar span { font-size: 6px; }
   .controlBar select { font-size: 9px; }
-  .storyCluster { transform: translate(-50%, -50%) scale(.5); }
   .subBubbleDecorative { width: 28px; height: 28px; margin-left: -14px; margin-top: -14px; }
-  .focusScene { width: 100%; transform: scale(.58); }
+  .focusScene { width: 100%; }
   .articleModalBackdrop.articleReaderDock { top: 68px; padding: 5px; }
   .articleHero { height: 150px; }
   .articleModalBody { padding: 17px 16px 22px; }
