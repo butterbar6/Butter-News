@@ -40,7 +40,7 @@ main {
   color: #fff;
   background: #050505;
   border-bottom: 2px solid #111;
-  padding: 8px min(31vw, 500px) 9px;
+  padding: 8px min(29vw, 470px) 9px;
   overflow: hidden;
   z-index: 5;
 }
@@ -74,31 +74,30 @@ main {
 
 .bannerSilhouette {
   position: absolute;
-  bottom: 1px;
-  width: min(31vw, 500px);
-  height: 92%;
-  min-height: 78px;
-  color: #ffffff;
+  top: 5px;
+  bottom: 5px;
+  width: min(37vw, 650px);
+  height: auto;
+  min-height: 86px;
   pointer-events: none;
-  opacity: .99;
+  opacity: 1;
   background-repeat: no-repeat;
-  background-position: center bottom;
-  background-size: contain;
+  background-position: center;
+  background-size: 100% 100%;
 }
 
 .bannerSilhouette svg { display: none; }
 
+/* Mercury, Venus, Earth, Mars. Each planet has animated surface features so it appears to spin continuously. */
 .bannerSilhouetteLeft {
   left: 0;
-  width: min(36vw, 610px);
-  height: 96%;
-  background-position: left bottom;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 760 150'%3E%3Cg fill='none' stroke='%23fff' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath stroke-width='7' d='M8 126H752'/%3E%3Cpath stroke-width='3.2' d='M8 119H752M8 132H752'/%3E%3Cpath stroke-width='9' d='M146 126V20M614 126V20'/%3E%3Cpath stroke-width='5' d='M128 20h36M596 20h36M134 34h24M602 34h24'/%3E%3Cpath stroke-width='3' d='M136 47h20M136 62h20M136 77h20M136 92h20M136 107h20M604 47h20M604 62h20M604 77h20M604 92h20M604 107h20'/%3E%3Cpath stroke-width='4.6' d='M150 24C218 76 287 91 380 92c93-1 162-16 230-68M150 34c69 51 139 69 230 70 91-1 161-19 230-70'/%3E%3Cpath stroke-width='3.7' d='M6 82C55 53 100 34 150 24M610 24c50 10 95 29 144 58'/%3E%3Cpath stroke-width='2.3' d='M165 35v91M187 49v77M209 60v66M231 69v57M253 76v50M275 82v44M297 86v40M319 89v37M341 91v35M363 92v34M397 92v34M419 91v35M441 89v37M463 86v40M485 82v44M507 76v50M529 69v57M551 60v66M573 49v77M595 35v91'/%3E%3Cpath stroke-width='2' d='M20 75v51M42 62v64M64 50v76M86 40v86M108 32v94M130 26v100M630 26v100M652 32v94M674 40v86M696 50v76M718 62v64M740 75v51'/%3E%3Cpath stroke-width='3.4' d='M6 115c42-3 83-5 124-6M630 109c41 1 82 3 124 6'/%3E%3Cpath stroke-width='2.3' d='M18 126l18-12 18 12 18-12 18 12 18-12 18 12 18-12 18 12M164 126l18-12 18 12 18-12 18 12 18-12 18 12 18-12 18 12 18-12 18 12 18-12 18 12 18-12 18 12 18-12 18 12 18-12 18 12 18-12 18 12 18-12 18 12 18-12 18 12 18-12 18 12M616 126l18-12 18 12 18-12 18 12 18-12 18 12 18-12 18 12'/%3E%3Cpath stroke-width='2.6' d='M130 18h40M590 18h40M139 12h22M599 12h22'/%3E%3C/g%3E%3Cg fill='%23fff'%3E%3Cpath d='M139 9h22v8h-22zM599 9h22v8h-22z'/%3E%3Cpath d='M132 122h36v10h-36zM592 122h36v10h-36z'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 650 100'%3E%3Cdefs%3E%3CclipPath id='m'%3E%3Ccircle cx='65' cy='50' r='19'/%3E%3C/clipPath%3E%3CclipPath id='v'%3E%3Ccircle cx='205' cy='50' r='27'/%3E%3C/clipPath%3E%3CclipPath id='e'%3E%3Ccircle cx='370' cy='50' r='30'/%3E%3C/clipPath%3E%3CclipPath id='r'%3E%3Ccircle cx='535' cy='50' r='23'/%3E%3C/clipPath%3E%3C/defs%3E%3Ccircle cx='65' cy='50' r='19' fill='%239c9c9c' stroke='%23d8d8d8' stroke-width='1.5'/%3E%3Cg clip-path='url(%23m)' fill='none' stroke='%236f6f6f' stroke-width='5' opacity='.8'%3E%3Cpath d='M25 38Q65 55 105 37M28 59Q65 43 102 61'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 65 50' to='360 65 50' dur='8s' repeatCount='indefinite'/%3E%3C/g%3E%3Ccircle cx='205' cy='50' r='27' fill='%23d8a64c' stroke='%23ffd888' stroke-width='1.5'/%3E%3Cg clip-path='url(%23v)' fill='none' stroke='%23f5d08a' stroke-width='7' opacity='.75'%3E%3Cpath d='M155 36Q205 55 255 36M155 58Q205 41 255 61M165 72Q205 60 248 74'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 205 50' to='360 205 50' dur='11s' repeatCount='indefinite'/%3E%3C/g%3E%3Ccircle cx='370' cy='50' r='30' fill='%231d70d6' stroke='%237ec8ff' stroke-width='1.5'/%3E%3Cg clip-path='url(%23e)' fill='%2346a84f'%3E%3Cpath d='M341 40l13-12 15 5 4 10-10 7-4 12-13-3zM378 29l15 7 5 12-8 7-2 14-14 3-7-13 5-9z'/%3E%3Cpath d='M338 59l11-5 8 7-5 12-10-4z'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 370 50' to='360 370 50' dur='10s' repeatCount='indefinite'/%3E%3C/g%3E%3Cpath d='M347 40Q370 34 394 41M346 58Q370 65 395 56' fill='none' stroke='%23fff' stroke-width='2' opacity='.7'/%3E%3Ccircle cx='535' cy='50' r='23' fill='%23b84d2e' stroke='%23ef8a62' stroke-width='1.5'/%3E%3Cg clip-path='url(%23r)' fill='none' stroke='%23782f20' stroke-width='5'%3E%3Cpath d='M499 39Q535 52 571 39M500 60Q535 47 570 61'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 535 50' to='360 535 50' dur='9s' repeatCount='indefinite'/%3E%3C/g%3E%3C/svg%3E");
 }
 
+/* Jupiter, Saturn, Uranus, Neptune. */
 .bannerSilhouetteRight {
-  right: 4px;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 520 130'%3E%3Cpath fill='%23fff' d='M5 117 62 91l32 8 43-30 28 10 65-69 29 33 21-14 32 37 23-18 37 36 22-8 74 41H5z'/%3E%3Cpath fill='%23050505' d='m193 49 37-39 29 33-16-7-9 12-10-11-11 13-10-8zM293 53l19-24 32 37-18-9-9 11-9-10-9 9zM365 66l17-18 37 36-19-8-8 10-10-10-9 8z'/%3E%3Cpath fill='none' stroke='%23050505' stroke-width='3' stroke-linecap='round' d='M35 112c42-14 69-11 104-26 34-15 52-29 78-51M247 108c35-16 58-24 84-47M330 108c28-14 51-23 75-35'/%3E%3Cpath fill='none' stroke='%23fff' stroke-width='2.5' stroke-linecap='round' d='m44 101 21-6 17 5m59-28 15-5 15 6m93-21 15-7 14 9m82 23 14-5 17 8'/%3E%3C/svg%3E");
+  right: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 650 100'%3E%3Cdefs%3E%3CclipPath id='j'%3E%3Ccircle cx='90' cy='50' r='39'/%3E%3C/clipPath%3E%3CclipPath id='s'%3E%3Ccircle cx='250' cy='50' r='30'/%3E%3C/clipPath%3E%3CclipPath id='u'%3E%3Ccircle cx='415' cy='50' r='27'/%3E%3C/clipPath%3E%3CclipPath id='n'%3E%3Ccircle cx='565' cy='50' r='26'/%3E%3C/clipPath%3E%3C/defs%3E%3Ccircle cx='90' cy='50' r='39' fill='%23d7a77e' stroke='%23ffe0bd' stroke-width='1.5'/%3E%3Cg clip-path='url(%23j)' fill='none'%3E%3Cpath d='M35 27H145M35 39H145M35 51H145M35 63H145M35 75H145' stroke='%23f0cfad' stroke-width='8'/%3E%3Cpath d='M35 33H145M35 57H145M35 69H145' stroke='%23a95f45' stroke-width='4'/%3E%3Cellipse cx='111' cy='61' rx='12' ry='6' fill='%23a84432' stroke='none'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 90 50' to='360 90 50' dur='7s' repeatCount='indefinite'/%3E%3C/g%3E%3Cellipse cx='250' cy='50' rx='51' ry='13' fill='none' stroke='%23e8d1a0' stroke-width='5' transform='rotate(-13 250 50)'/%3E%3Cellipse cx='250' cy='50' rx='44' ry='9' fill='none' stroke='%239d8562' stroke-width='2' transform='rotate(-13 250 50)'/%3E%3Ccircle cx='250' cy='50' r='30' fill='%23d7bd7c' stroke='%23ffe6aa' stroke-width='1.5'/%3E%3Cg clip-path='url(%23s)' fill='none' stroke='%23a88b53' stroke-width='5'%3E%3Cpath d='M208 39H292M208 51H292M208 64H292'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 250 50' to='360 250 50' dur='12s' repeatCount='indefinite'/%3E%3C/g%3E%3Ccircle cx='415' cy='50' r='27' fill='%237edce3' stroke='%23c8fbff' stroke-width='1.5'/%3E%3Cg clip-path='url(%23u)' fill='none' stroke='%2355b8c2' stroke-width='5'%3E%3Cpath d='M380 37Q415 46 450 37M381 58Q415 50 449 60'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 415 50' to='360 415 50' dur='14s' repeatCount='indefinite'/%3E%3C/g%3E%3Ccircle cx='565' cy='50' r='26' fill='%232d52c7' stroke='%237da1ff' stroke-width='1.5'/%3E%3Cg clip-path='url(%23n)' fill='none' stroke='%235f82ee' stroke-width='5'%3E%3Cpath d='M528 36Q565 48 602 35M529 58Q565 47 601 60M535 70Q565 62 595 71'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 565 50' to='360 565 50' dur='13s' repeatCount='indefinite'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 .controlBar {
@@ -198,24 +197,25 @@ main {
 .articleText { font-family: Georgia, 'Times New Roman', serif; font-size: 16px; line-height: 1.62; color: #222; }
 .articleText p { margin: 0 0 1.15em; }
 
+/* CSS-module state classes are intentionally overridden here so unread/viewed labels stay consistent in both views. */
+[class*="unreadLabel"] { color: #111 !important; background: #39ff14 !important; }
+[class*="viewedLabel"] { color: #111 !important; background: #fff !important; }
+
 .panel { margin: 18px; border: 1.5px solid #111; border-radius: 18px; background: #fff; }
 .errorBox, .emptyBox { padding: 20px; }
 .errorBox p { margin-bottom: 0; opacity: .7; }
 
 @media (max-width: 1180px) {
-  .brandBanner { padding-left: 210px; padding-right: 190px; }
-  .bannerSilhouette { width: 30vw; height: 86%; }
-  .bannerSilhouetteLeft { width: 39vw; height: 94%; }
+  .brandBanner { padding-left: 205px; padding-right: 205px; }
+  .bannerSilhouette { width: 35vw; }
   .storyCluster { transform: translate(-50%, -50%) scale(.82); }
 }
 
 @media (max-width: 900px) {
-  .brandBanner { min-height: 80px; padding-left: 145px; padding-right: 130px; }
+  .brandBanner { min-height: 80px; padding-left: 142px; padding-right: 142px; }
   .brandBanner h1 { font-size: 32px; }
   .brandBanner p { font-size: 14px; }
-  .bannerSilhouette { width: 145px; height: 78%; min-height: 56px; }
-  .bannerSilhouetteLeft { width: 180px; height: 90%; }
-  .bannerSilhouetteRight { right: 3px; }
+  .bannerSilhouette { width: 34vw; min-height: 68px; }
   .storyCluster { transform: translate(-50%, -50%) scale(.7); }
   .focusScene { transform: scale(.77); }
   .articleModalBackdrop.articleReaderDock { top: 80px; }
@@ -225,8 +225,7 @@ main {
   .brandBanner { min-height: 68px; padding: 6px 92px; }
   .brandBanner h1 { font-size: 24px; -webkit-text-stroke-width: 1px; }
   .brandBanner p { font-size: 10px; }
-  .bannerSilhouette { width: 90px; height: 75%; min-height: 45px; }
-  .bannerSilhouetteLeft { width: 108px; height: 86%; }
+  .bannerSilhouette { width: 38vw; min-height: 56px; }
   .controlBar { bottom: 6px; gap: 3px; padding: 3px; }
   .controlBar label { min-width: 102px; padding: 3px 6px; }
   .controlBar span { font-size: 6px; }
