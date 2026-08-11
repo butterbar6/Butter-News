@@ -52,6 +52,8 @@
   top: calc(100% + 4px);
   transform: translateX(-50%);
   width: 82px;
+  min-height: 18px;
+  max-height: 22px;
   border: 1px solid rgba(0,0,0,.35);
   border-radius: 4px;
   padding: 2px 3px;
@@ -73,6 +75,34 @@
 .unreadLabel { color: #111 !important; background: #39FF14 !important; }
 .viewedLabel { color: #111 !important; background: #fff !important; }
 
+.photoMainBubble {
+  background-size: cover !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+}
+
+.mainTopicText,
+.focusMainTitle {
+  color: #fff !important;
+  font-weight: 950 !important;
+  text-transform: uppercase;
+  line-height: .94 !important;
+  letter-spacing: -.035em !important;
+  -webkit-text-stroke: .9px #111;
+  paint-order: stroke fill;
+  text-shadow: 0 2px 3px #000, 0 0 8px rgba(0,0,0,.95) !important;
+}
+
+.mainMetricText {
+  color: #111 !important;
+  background: rgba(255,255,255,.94) !important;
+  border: 1px solid #111;
+  border-radius: 999px;
+  padding: 2px 6px;
+  text-shadow: none !important;
+  font-weight: 900 !important;
+}
+
 .focusArticleNumber {
   position: relative;
   z-index: 2;
@@ -91,17 +121,19 @@
   left: 50%;
   top: calc(100% + 5px);
   transform: translateX(-50%);
+  min-height: 17px;
+  max-height: 25px;
   border: 1px solid rgba(0,0,0,.35);
   border-radius: 5px;
   padding: 3px 4px;
-  line-height: 1.12 !important;
+  line-height: 1.08 !important;
   font-weight: 850 !important;
   text-align: center;
   text-transform: none !important;
   letter-spacing: 0 !important;
   text-shadow: none !important;
   display: -webkit-box !important;
-  -webkit-line-clamp: 3 !important;
+  -webkit-line-clamp: 2 !important;
   -webkit-box-orient: vertical !important;
   overflow: hidden !important;
   pointer-events: none;
@@ -109,7 +141,7 @@
 }
 
 .focusArticleLabel { display: none !important; }
-.moreHint { margin-top: 10px; font-size: 9px; line-height: 1.1; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; opacity: .62; }
+.moreHint { margin-top: 10px; font-size: 9px; line-height: 1.1; font-weight: 800; text-transform: uppercase; letter-spacing: .06em; opacity: .75; color: #111; background: rgba(255,255,255,.92); border-radius: 999px; padding: 3px 7px; }
 
 /* Detailed, shaded, continuously rotating solar-system banner art. */
 :global(.bannerSilhouetteLeft) {
@@ -137,5 +169,5 @@
   .customArticleRow { gap: 4px; }
   .customArticleTitle { font-size: 9.5px; }
   .overviewSatellite { width: 36px !important; height: 36px !important; margin-left: -18px !important; margin-top: -18px !important; }
-  .satelliteLabel { width: 66px; font-size: 6.5px; }
+  .satelliteLabel { width: 66px; font-size: 6.5px; max-height: 20px; }
 }
