@@ -102,9 +102,8 @@ main {
 
 .controlBar {
   position: fixed;
-  left: 50%;
+  right: 10px;
   bottom: 10px;
-  transform: translateX(-50%);
   z-index: 60;
   display: flex;
   justify-content: center;
@@ -226,7 +225,7 @@ main {
   .brandBanner h1 { font-size: 24px; -webkit-text-stroke-width: 1px; }
   .brandBanner p { font-size: 10px; }
   .bannerSilhouette { width: 38vw; min-height: 56px; }
-  .controlBar { bottom: 6px; gap: 3px; padding: 3px; }
+  .controlBar { right: 6px; bottom: 6px; gap: 3px; padding: 3px; }
   .controlBar label { min-width: 102px; padding: 3px 6px; }
   .controlBar span { font-size: 6px; }
   .controlBar select { font-size: 9px; }
