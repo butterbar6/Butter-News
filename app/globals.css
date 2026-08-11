@@ -23,11 +23,7 @@ main {
   padding: 0;
 }
 
-.visualizerShell {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
+.visualizerShell { height: 100%; display: flex; flex-direction: column; }
 
 .brandBanner {
   position: relative;
@@ -44,78 +40,16 @@ main {
   overflow: hidden;
   z-index: 5;
 }
-
 .brandCopy { position: relative; z-index: 2; }
+.brandBanner h1 { margin: 0; font-family: Arial, Helvetica, sans-serif; font-size: clamp(28px, 3.2vw, 50px); line-height: .95; letter-spacing: .02em; font-weight: 900; font-style: italic; color: #ff1493; -webkit-text-stroke: 1.35px #ffffff; paint-order: stroke fill; text-shadow: 0 1px 0 #fff; }
+.brandBanner p { margin: 5px 0 0; font-family: Arial, Helvetica, sans-serif; font-size: clamp(14px, 1.35vw, 20px); line-height: 1; font-style: normal; font-weight: 600; letter-spacing: .03em; color: #ffffff; }
 
-.brandBanner h1 {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(28px, 3.2vw, 50px);
-  line-height: .95;
-  letter-spacing: .02em;
-  font-weight: 900;
-  font-style: italic;
-  color: #ff1493;
-  -webkit-text-stroke: 1.35px #ffffff;
-  paint-order: stroke fill;
-  text-shadow: 0 1px 0 #fff;
-}
-
-.brandBanner p {
-  margin: 5px 0 0;
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: clamp(14px, 1.35vw, 20px);
-  line-height: 1;
-  font-style: normal;
-  font-weight: 600;
-  letter-spacing: .03em;
-  color: #ffffff;
-}
-
-.bannerSilhouette {
-  position: absolute;
-  top: 5px;
-  bottom: 5px;
-  width: min(37vw, 650px);
-  height: auto;
-  min-height: 86px;
-  pointer-events: none;
-  opacity: 1;
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: 100% 100%;
-}
-
+.bannerSilhouette { position: absolute; top: 5px; bottom: 5px; width: min(37vw, 650px); height: auto; min-height: 86px; pointer-events: none; opacity: 1; background-repeat: no-repeat; background-position: center; background-size: 100% 100%; }
 .bannerSilhouette svg { display: none; }
+.bannerSilhouetteLeft { left: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 650 100'%3E%3Cdefs%3E%3CclipPath id='m'%3E%3Ccircle cx='65' cy='50' r='19'/%3E%3C/clipPath%3E%3CclipPath id='v'%3E%3Ccircle cx='205' cy='50' r='27'/%3E%3C/clipPath%3E%3CclipPath id='e'%3E%3Ccircle cx='370' cy='50' r='30'/%3E%3C/clipPath%3E%3CclipPath id='r'%3E%3Ccircle cx='535' cy='50' r='23'/%3E%3C/clipPath%3E%3C/defs%3E%3Ccircle cx='65' cy='50' r='19' fill='%239c9c9c' stroke='%23d8d8d8' stroke-width='1.5'/%3E%3Cg clip-path='url(%23m)' fill='none' stroke='%236f6f6f' stroke-width='5' opacity='.8'%3E%3Cpath d='M25 38Q65 55 105 37M28 59Q65 43 102 61'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 65 50' to='360 65 50' dur='8s' repeatCount='indefinite'/%3E%3C/g%3E%3Ccircle cx='205' cy='50' r='27' fill='%23d8a64c' stroke='%23ffd888' stroke-width='1.5'/%3E%3Cg clip-path='url(%23v)' fill='none' stroke='%23f5d08a' stroke-width='7' opacity='.75'%3E%3Cpath d='M155 36Q205 55 255 36M155 58Q205 41 255 61M165 72Q205 60 248 74'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 205 50' to='360 205 50' dur='11s' repeatCount='indefinite'/%3E%3C/g%3E%3Ccircle cx='370' cy='50' r='30' fill='%231d70d6' stroke='%237ec8ff' stroke-width='1.5'/%3E%3Cg clip-path='url(%23e)' fill='%2346a84f'%3E%3Cpath d='M341 40l13-12 15 5 4 10-10 7-4 12-13-3zM378 29l15 7 5 12-8 7-2 14-14 3-7-13 5-9z'/%3E%3Cpath d='M338 59l11-5 8 7-5 12-10-4z'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 370 50' to='360 370 50' dur='10s' repeatCount='indefinite'/%3E%3C/g%3E%3Cpath d='M347 40Q370 34 394 41M346 58Q370 65 395 56' fill='none' stroke='%23fff' stroke-width='2' opacity='.7'/%3E%3Ccircle cx='535' cy='50' r='23' fill='%23b84d2e' stroke='%23ef8a62' stroke-width='1.5'/%3E%3Cg clip-path='url(%23r)' fill='none' stroke='%23782f20' stroke-width='5'%3E%3Cpath d='M499 39Q535 52 571 39M500 60Q535 47 570 61'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 535 50' to='360 535 50' dur='9s' repeatCount='indefinite'/%3E%3C/g%3E%3C/svg%3E"); }
+.bannerSilhouetteRight { right: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 650 100'%3E%3Cdefs%3E%3CclipPath id='j'%3E%3Ccircle cx='90' cy='50' r='39'/%3E%3C/clipPath%3E%3CclipPath id='s'%3E%3Ccircle cx='250' cy='50' r='30'/%3E%3C/clipPath%3E%3CclipPath id='u'%3E%3Ccircle cx='415' cy='50' r='27'/%3E%3C/clipPath%3E%3CclipPath id='n'%3E%3Ccircle cx='565' cy='50' r='26'/%3E%3C/clipPath%3E%3C/defs%3E%3Ccircle cx='90' cy='50' r='39' fill='%23d7a77e' stroke='%23ffe0bd' stroke-width='1.5'/%3E%3Cg clip-path='url(%23j)' fill='none'%3E%3Cpath d='M35 27H145M35 39H145M35 51H145M35 63H145M35 75H145' stroke='%23f0cfad' stroke-width='8'/%3E%3Cpath d='M35 33H145M35 57H145M35 69H145' stroke='%23a95f45' stroke-width='4'/%3E%3Cellipse cx='111' cy='61' rx='12' ry='6' fill='%23a84432' stroke='none'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 90 50' to='360 90 50' dur='7s' repeatCount='indefinite'/%3E%3C/g%3E%3Cellipse cx='250' cy='50' rx='51' ry='13' fill='none' stroke='%23e8d1a0' stroke-width='5' transform='rotate(-13 250 50)'/%3E%3Cellipse cx='250' cy='50' rx='44' ry='9' fill='none' stroke='%239d8562' stroke-width='2' transform='rotate(-13 250 50)'/%3E%3Ccircle cx='250' cy='50' r='30' fill='%23d7bd7c' stroke='%23ffe6aa' stroke-width='1.5'/%3E%3Cg clip-path='url(%23s)' fill='none' stroke='%23a88b53' stroke-width='5'%3E%3Cpath d='M208 39H292M208 51H292M208 64H292'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 250 50' to='360 250 50' dur='12s' repeatCount='indefinite'/%3E%3C/g%3E%3Ccircle cx='415' cy='50' r='27' fill='%237edce3' stroke='%23c8fbff' stroke-width='1.5'/%3E%3Cg clip-path='url(%23u)' fill='none' stroke='%2355b8c2' stroke-width='5'%3E%3Cpath d='M380 37Q415 46 450 37M381 58Q415 50 449 60'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 415 50' to='360 415 50' dur='14s' repeatCount='indefinite'/%3E%3C/g%3E%3Ccircle cx='565' cy='50' r='26' fill='%232d52c7' stroke='%237da1ff' stroke-width='1.5'/%3E%3Cg clip-path='url(%23n)' fill='none' stroke='%235f82ee' stroke-width='5'%3E%3Cpath d='M528 36Q565 48 602 35M529 58Q565 47 601 60M535 70Q565 62 595 71' stroke='%235f82ee' stroke-width='5'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 565 50' to='360 565 50' dur='13s' repeatCount='indefinite'/%3E%3C/g%3E%3C/svg%3E"); }
 
-/* Mercury, Venus, Earth, Mars. Each planet has animated surface features so it appears to spin continuously. */
-.bannerSilhouetteLeft {
-  left: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 650 100'%3E%3Cdefs%3E%3CclipPath id='m'%3E%3Ccircle cx='65' cy='50' r='19'/%3E%3C/clipPath%3E%3CclipPath id='v'%3E%3Ccircle cx='205' cy='50' r='27'/%3E%3C/clipPath%3E%3CclipPath id='e'%3E%3Ccircle cx='370' cy='50' r='30'/%3E%3C/clipPath%3E%3CclipPath id='r'%3E%3Ccircle cx='535' cy='50' r='23'/%3E%3C/clipPath%3E%3C/defs%3E%3Ccircle cx='65' cy='50' r='19' fill='%239c9c9c' stroke='%23d8d8d8' stroke-width='1.5'/%3E%3Cg clip-path='url(%23m)' fill='none' stroke='%236f6f6f' stroke-width='5' opacity='.8'%3E%3Cpath d='M25 38Q65 55 105 37M28 59Q65 43 102 61'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 65 50' to='360 65 50' dur='8s' repeatCount='indefinite'/%3E%3C/g%3E%3Ccircle cx='205' cy='50' r='27' fill='%23d8a64c' stroke='%23ffd888' stroke-width='1.5'/%3E%3Cg clip-path='url(%23v)' fill='none' stroke='%23f5d08a' stroke-width='7' opacity='.75'%3E%3Cpath d='M155 36Q205 55 255 36M155 58Q205 41 255 61M165 72Q205 60 248 74'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 205 50' to='360 205 50' dur='11s' repeatCount='indefinite'/%3E%3C/g%3E%3Ccircle cx='370' cy='50' r='30' fill='%231d70d6' stroke='%237ec8ff' stroke-width='1.5'/%3E%3Cg clip-path='url(%23e)' fill='%2346a84f'%3E%3Cpath d='M341 40l13-12 15 5 4 10-10 7-4 12-13-3zM378 29l15 7 5 12-8 7-2 14-14 3-7-13 5-9z'/%3E%3Cpath d='M338 59l11-5 8 7-5 12-10-4z'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 370 50' to='360 370 50' dur='10s' repeatCount='indefinite'/%3E%3C/g%3E%3Cpath d='M347 40Q370 34 394 41M346 58Q370 65 395 56' fill='none' stroke='%23fff' stroke-width='2' opacity='.7'/%3E%3Ccircle cx='535' cy='50' r='23' fill='%23b84d2e' stroke='%23ef8a62' stroke-width='1.5'/%3E%3Cg clip-path='url(%23r)' fill='none' stroke='%23782f20' stroke-width='5'%3E%3Cpath d='M499 39Q535 52 571 39M500 60Q535 47 570 61'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 535 50' to='360 535 50' dur='9s' repeatCount='indefinite'/%3E%3C/g%3E%3C/svg%3E");
-}
-
-/* Jupiter, Saturn, Uranus, Neptune. */
-.bannerSilhouetteRight {
-  right: 0;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 650 100'%3E%3Cdefs%3E%3CclipPath id='j'%3E%3Ccircle cx='90' cy='50' r='39'/%3E%3C/clipPath%3E%3CclipPath id='s'%3E%3Ccircle cx='250' cy='50' r='30'/%3E%3C/clipPath%3E%3CclipPath id='u'%3E%3Ccircle cx='415' cy='50' r='27'/%3E%3C/clipPath%3E%3CclipPath id='n'%3E%3Ccircle cx='565' cy='50' r='26'/%3E%3C/clipPath%3E%3C/defs%3E%3Ccircle cx='90' cy='50' r='39' fill='%23d7a77e' stroke='%23ffe0bd' stroke-width='1.5'/%3E%3Cg clip-path='url(%23j)' fill='none'%3E%3Cpath d='M35 27H145M35 39H145M35 51H145M35 63H145M35 75H145' stroke='%23f0cfad' stroke-width='8'/%3E%3Cpath d='M35 33H145M35 57H145M35 69H145' stroke='%23a95f45' stroke-width='4'/%3E%3Cellipse cx='111' cy='61' rx='12' ry='6' fill='%23a84432' stroke='none'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 90 50' to='360 90 50' dur='7s' repeatCount='indefinite'/%3E%3C/g%3E%3Cellipse cx='250' cy='50' rx='51' ry='13' fill='none' stroke='%23e8d1a0' stroke-width='5' transform='rotate(-13 250 50)'/%3E%3Cellipse cx='250' cy='50' rx='44' ry='9' fill='none' stroke='%239d8562' stroke-width='2' transform='rotate(-13 250 50)'/%3E%3Ccircle cx='250' cy='50' r='30' fill='%23d7bd7c' stroke='%23ffe6aa' stroke-width='1.5'/%3E%3Cg clip-path='url(%23s)' fill='none' stroke='%23a88b53' stroke-width='5'%3E%3Cpath d='M208 39H292M208 51H292M208 64H292'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 250 50' to='360 250 50' dur='12s' repeatCount='indefinite'/%3E%3C/g%3E%3Ccircle cx='415' cy='50' r='27' fill='%237edce3' stroke='%23c8fbff' stroke-width='1.5'/%3E%3Cg clip-path='url(%23u)' fill='none' stroke='%2355b8c2' stroke-width='5'%3E%3Cpath d='M380 37Q415 46 450 37M381 58Q415 50 449 60'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 415 50' to='360 415 50' dur='14s' repeatCount='indefinite'/%3E%3C/g%3E%3Ccircle cx='565' cy='50' r='26' fill='%232d52c7' stroke='%237da1ff' stroke-width='1.5'/%3E%3Cg clip-path='url(%23n)' fill='none' stroke='%235f82ee' stroke-width='5'%3E%3Cpath d='M528 36Q565 48 602 35M529 58Q565 47 601 60M535 70Q565 62 595 71'/%3E%3CanimateTransform attributeName='transform' type='rotate' from='0 565 50' to='360 565 50' dur='13s' repeatCount='indefinite'/%3E%3C/g%3E%3C/svg%3E");
-}
-
-.controlBar {
-  position: fixed;
-  right: 10px;
-  bottom: 10px;
-  z-index: 60;
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  align-items: center;
-  padding: 4px;
-  border: 1px solid rgba(0,0,0,.18);
-  border-radius: 999px;
-  background: rgba(255,255,255,.94);
-  box-shadow: 0 5px 18px rgba(0,0,0,.12);
-  backdrop-filter: blur(6px);
-}
+.controlBar { position: fixed; right: 10px; bottom: 10px; z-index: 60; display: flex; justify-content: center; gap: 6px; align-items: center; padding: 4px; border: 1px solid rgba(0,0,0,.18); border-radius: 999px; background: rgba(255,255,255,.94); box-shadow: 0 5px 18px rgba(0,0,0,.12); backdrop-filter: blur(6px); }
 .controlBar label { display: grid; gap: 1px; min-width: 122px; padding: 4px 8px; border: 1px solid #111; border-radius: 999px; background: #fff; }
 .controlBar span { font-size: 7px; line-height: 1; text-transform: uppercase; letter-spacing: .08em; opacity: .55; }
 .controlBar select { color: #111; border: 0; outline: 0; background: transparent; font-size: 11px; line-height: 1.05; font-weight: 800; cursor: pointer; }
@@ -123,71 +57,34 @@ main {
 .bubbleStage { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; transition: margin-left .22s ease, width .22s ease; }
 .circularStage { height: auto; min-height: 0; max-height: none; padding: 8px 18px 12px; }
 .storyCluster { position: absolute; transform: translate(-50%, -50%); }
-
-.storyBubble {
-  border-radius: 50%;
-  border: 2.5px solid #111;
-  color: #111;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  box-shadow: 0 8px 20px rgba(0,0,0,.08);
-  transition: transform .18s ease, box-shadow .18s ease;
-  overflow: hidden;
-}
+.storyBubble { border-radius: 50%; border: 2.5px solid #111; color: #111; padding: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; box-shadow: 0 8px 20px rgba(0,0,0,.12); transition: transform .18s ease, box-shadow .18s ease; overflow: hidden; }
 .solidBubble { background-image: none !important; }
-.mainBubbleButton { position: absolute; inset: 0; cursor: pointer; }
-.overviewCluster:hover .mainBubbleButton { transform: scale(1.008); box-shadow: 0 11px 25px rgba(0,0,0,.13); }
-.storyBubble strong { display: block; max-width: 84%; line-height: 1.02; font-weight: 900; overflow-wrap: normal; word-break: keep-all; hyphens: none; white-space: normal; text-shadow: none; }
-.bubbleMetric { margin-top: 7px; margin-bottom: 0; letter-spacing: .04em; text-transform: uppercase; opacity: .76; text-shadow: none; white-space: nowrap; max-width: 90%; }
+.mainBubbleButton { position: absolute; inset: 0; cursor: pointer; background-size: cover; background-position: center; background-repeat: no-repeat; overflow: visible; }
+.focusMainBubble { background-size: cover; background-position: center; background-repeat: no-repeat; overflow: visible; }
+.overviewCluster:hover .mainBubbleButton { transform: scale(1.008); box-shadow: 0 11px 25px rgba(0,0,0,.18); }
+.storyBubble strong { display: block; max-width: 84%; line-height: .96; font-weight: 950; overflow-wrap: normal; word-break: keep-all; hyphens: none; white-space: normal; }
+.mainBubbleButton strong, .focusMainBubble strong { position: relative; z-index: 2; color: #fff; max-width: 108%; text-transform: uppercase; letter-spacing: -.035em; -webkit-text-stroke: .9px #111; paint-order: stroke fill; text-shadow: 0 2px 3px #000, 0 0 8px rgba(0,0,0,.95); }
+.focusMainBubble strong { font-size: clamp(25px, 3vw, 42px); }
+.bubbleMetric { margin-top: 7px; margin-bottom: 0; letter-spacing: .04em; text-transform: uppercase; opacity: .9; white-space: nowrap; max-width: 95%; }
+.mainBubbleButton .bubbleMetric, .focusMainBubble .bubbleMetric { position: relative; z-index: 2; color: #111; background: rgba(255,255,255,.92); border: 1px solid #111; border-radius: 999px; padding: 2px 6px; text-shadow: none; font-weight: 900; }
 .decorativeOrbit { pointer-events: none; }
 
-.subBubble { position: absolute; border-radius: 50%; border: 1.75px solid #111; padding: 0; box-shadow: 0 3px 8px rgba(0,0,0,.09); }
-.subBubbleDecorative { width: 30px; height: 30px; margin-left: -15px; margin-top: -15px; opacity: 1; transform: none !important; transition: none !important; filter: none !important; background-size: cover; background-position: center; background-repeat: no-repeat; }
+.subBubble { position: absolute; border-radius: 50%; border: 1.75px solid #111; padding: 0; box-shadow: 0 3px 8px rgba(0,0,0,.09); background-size: cover; background-position: center; background-repeat: no-repeat; opacity: 1 !important; filter: none !important; }
+.subBubbleDecorative { width: 30px; height: 30px; margin-left: -15px; margin-top: -15px; transform: none !important; transition: none !important; }
 .overviewView .subBubbleDecorative:hover { transform: none !important; box-shadow: 0 3px 8px rgba(0,0,0,.09) !important; filter: none !important; }
 
 .focusView { min-height: 0; display: grid; place-items: center; animation: zoomInView .35s ease both; }
 @keyframes zoomInView { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
 .backButton { position: absolute; top: 10px; left: 12px; z-index: 20; border: 1.5px solid #111; background: #fff; color: #111; border-radius: 999px; padding: 9px 14px; cursor: pointer; font-weight: 800; }
-.focusScene { position: relative; width: min(920px, 92vw); height: min(690px, calc(100svh - 190px)); min-height: 600px; }
-.focusOrbitRing { position: absolute; left: 50%; top: 50%; width: 570px; height: 570px; transform: translate(-50%, -50%); border: 1.5px dashed rgba(0,0,0,.35); border-radius: 50%; pointer-events: none; }
-.focusMainBubble { position: absolute; left: 50%; top: 50%; width: 330px; height: 330px; transform: translate(-50%, -50%); z-index: 4; }
-.focusMainBubble strong { font-size: clamp(20px, 2vw, 29px); overflow-wrap: normal; word-break: keep-all; hyphens: none; }
-.focusSubBubble { width: 130px; height: 130px; margin-left: -65px; margin-top: -65px; cursor: pointer; color: #fff; display: grid; place-items: center; padding: 12px; text-align: center; z-index: 6; border: 2px solid #111; background-size: cover; background-position: center; transition: transform .18s ease, box-shadow .18s ease, filter .18s ease; }
-.focusSubBubble span { font-size: 11px; line-height: 1.15; font-weight: 800; text-transform: none; letter-spacing: 0; opacity: 1; text-shadow: 0 2px 10px rgba(0,0,0,.72); display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: normal; word-break: keep-all; hyphens: none; }
-.focusSubBubble:hover { transform: scale(1.06); box-shadow: 0 10px 24px rgba(0,0,0,.2); }
+.focusScene { position: relative; width: min(920px, 92vw); height: min(690px, calc(100svh - 190px)); min-height: 0; }
+.focusOrbitRing { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); border: 1.5px dashed rgba(0,0,0,.35); border-radius: 50%; pointer-events: none; }
+.focusMainBubble { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 4; }
+.focusSubBubble { cursor: pointer; color: #fff; display: grid; place-items: center; text-align: center; z-index: 6; border: 2px solid #111; transition: transform .18s ease, box-shadow .18s ease; }
+.focusSubBubble span { font-size: 11px; line-height: 1.15; font-weight: 800; text-transform: none; letter-spacing: 0; opacity: 1; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: normal; word-break: keep-all; hyphens: none; }
+.focusSubBubble:hover { transform: scale(1.04); box-shadow: 0 10px 24px rgba(0,0,0,.2); }
 
-.articleModalBackdrop.articleReaderDock {
-  position: fixed;
-  left: 0;
-  top: 104px;
-  bottom: 0;
-  right: auto;
-  z-index: 50;
-  display: block;
-  padding: 8px 8px 12px;
-  background: #fff;
-  border-right: 2px solid #111;
-  backdrop-filter: none;
-  overflow: hidden;
-}
-
-.articleReaderDock .articleModal {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  max-height: none;
-  overflow: auto;
-  border: 1.5px solid #111;
-  border-radius: 12px;
-  background: #fff;
-  color: #111;
-  box-shadow: 6px 0 20px rgba(0,0,0,.08);
-}
-
+.articleModalBackdrop.articleReaderDock { position: fixed; left: 0; top: 104px; bottom: 0; right: auto; z-index: 50; display: block; padding: 8px 8px 12px; background: #fff; border-right: 2px solid #111; backdrop-filter: none; overflow: hidden; }
+.articleReaderDock .articleModal { position: relative; width: 100%; height: 100%; max-height: none; overflow: auto; border: 1.5px solid #111; border-radius: 12px; background: #fff; color: #111; box-shadow: 6px 0 20px rgba(0,0,0,.08); }
 .modalClose { position: absolute; right: 12px; top: 12px; z-index: 3; width: 36px; height: 36px; border: 1.5px solid #111; border-radius: 50%; background: #fff; color: #111; font-size: 25px; line-height: 1; cursor: pointer; }
 .articleHero { height: 190px; background-size: cover; background-position: center; }
 .articleModalBody { padding: 20px 22px 28px; }
@@ -196,7 +93,6 @@ main {
 .articleText { font-family: Georgia, 'Times New Roman', serif; font-size: 16px; line-height: 1.62; color: #222; }
 .articleText p { margin: 0 0 1.15em; }
 
-/* CSS-module state classes are intentionally overridden here so unread/viewed labels stay consistent in both views. */
 [class*="unreadLabel"] { color: #111 !important; background: #39ff14 !important; }
 [class*="viewedLabel"] { color: #111 !important; background: #fff !important; }
 
@@ -231,7 +127,7 @@ main {
   .controlBar select { font-size: 9px; }
   .storyCluster { transform: translate(-50%, -50%) scale(.5); }
   .subBubbleDecorative { width: 28px; height: 28px; margin-left: -14px; margin-top: -14px; }
-  .focusScene { width: 100%; height: 620px; min-height: 620px; transform: scale(.58); }
+  .focusScene { width: 100%; transform: scale(.58); }
   .articleModalBackdrop.articleReaderDock { top: 68px; padding: 5px; }
   .articleHero { height: 150px; }
   .articleModalBody { padding: 17px 16px 22px; }
